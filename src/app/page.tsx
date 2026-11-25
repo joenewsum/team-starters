@@ -12,7 +12,7 @@ export default function Home() {
       <p className="mt-5 text-lg text-gray-700">
         Pick a Team Starter, share one link with your team, and get an AI readout
         of what they think: where you agree, where you don&apos;t, and what to do
-        next. Answers are anonymous and it takes about 10 minutes.
+        next. Answers are anonymous and it takes 10 to 15 minutes.
       </p>
       <Link
         href="/login"

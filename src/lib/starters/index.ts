@@ -17,7 +17,7 @@ export const VALUE_STARTER: Starter = {
   version: 4,
   description:
     "Who your customers are, the value you create, and where the week goes.",
-  minutes: 10,
+  minutes: 15,
   questions: [
     {
       id: "role",
