@@ -14,6 +14,7 @@ export type Synthesis = {
   headline: string;
   alignment: Alignment[];
   value_statement: string;
+  value_statement_options?: string[];
   scoreboard: { metric: string; why: string }[];
   mix_read: string;
   discussion_questions: string[];
@@ -70,7 +71,13 @@ const readoutTool = {
       path_to_10: { ...themeSchema, description: "What the team says it would take to get to a 10, as themes." },
       value_statement: {
         type: "string",
-        description: "A draft value statement in one or two sentences, built from how the team described the value.",
+        description:
+          "The draft value statement: one sentence that names the outcome the customers get, for whom, and how it should feel. Follow the value statement rules.",
+      },
+      value_statement_options: {
+        type: "array",
+        items: { type: "string" },
+        description: "Two alternative versions with a different emphasis, following the same rules.",
       },
       scoreboard: {
         type: "array",
@@ -101,7 +108,7 @@ const readoutTool = {
       next_steps: { type: "array", items: { type: "string" }, description: "3 concrete next steps for the leader." },
     },
     required: [
-      "headline", "alignment", "score_read", "score_reasons", "path_to_10", "value_statement",
+      "headline", "alignment", "score_read", "score_reasons", "path_to_10", "value_statement", "value_statement_options",
       "scoreboard", "work_map", "work_disagreements", "mix_read", "one_change",
       "discussion_questions", "next_steps",
     ],
@@ -121,7 +128,15 @@ How to write:
 - Agreement: "Strong" only when most of the team named the same theme and the leader's view matches. "Mixed" when there's overlap but different emphasis or a leader gap. "Low" when answers point in different directions.
 - Use the value mix numbers exactly as given. Don't add percentages that aren't in the data.
 - Base everything on the answers. If the team gave little to go on, say so.
-- Value means the value the team creates: more and better outcomes for the people it serves and for the business.`;
+- Value means the value the team creates: more and better outcomes for the people it serves and for the business.
+- Never build a sentence around a contrast or a correction, like "The real story isn't the number, it's the spread," "This is less about X and more about Y," or "It's not A. It's B." State the point directly: "The spread matters most: scores ran from 4 to 8."
+
+Value statement rules:
+- Describe the outcome the customers get, not the team's activities. Write "Hire great people who succeed here," not "Source, screen, and manage candidates."
+- Aim for the 10. Build it from the strongest answers to how people describe the value and what it would take to get to a 10. It says what the team is here to deliver at its best, so a team can rally around it.
+- Leave out diagnosis, caveats, and current problems. Those belong elsewhere in the readout.
+- One sentence, plain and memorable. Shape: the outcome, for whom, and how it should feel (speed, quality, experience).
+- Example for a recruiting team: "Hire great people who will succeed here, fast, while giving hiring managers and candidates a seamless and warm experience."`;
 
 export async function synthesize(input: {
   teamName: string;

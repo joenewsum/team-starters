@@ -124,6 +124,21 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
 
       <Section title="A draft value statement">
         <p className="rounded-md bg-cream p-5 text-lg text-navy">{s.value_statement}</p>
+        {s.value_statement_options && s.value_statement_options.length > 0 && (
+          <div className="mt-4 break-inside-avoid">
+            <p className="text-sm font-semibold text-gray-600">Other ways to say it</p>
+            <ul className="mt-2 space-y-2">
+              {s.value_statement_options.map((v) => (
+                <li key={v} className="rounded-md border border-line p-4 text-navy">
+                  {v}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <p className="mt-3 text-sm text-gray-500 print:hidden">
+          A starting point for the team meeting. The best version is the one your team writes together.
+        </p>
       </Section>
 
       <Section title="A draft scoreboard">
