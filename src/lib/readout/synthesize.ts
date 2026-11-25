@@ -106,19 +106,44 @@ export async function synthesize(input: {
     speed: input.stats.choices,
   };
 
-  const msg = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5",
+  const params = {
     max_tokens: 4000,
     system: SYSTEM,
     tools: [readoutTool],
-    tool_choice: { type: "tool", name: "write_readout" },
+    tool_choice: { type: "tool" as const, name: "write_readout" },
     messages: [
       {
-        role: "user",
+        role: "user" as const,
         content: `Here are the survey results as JSON. Write the readout.\n\n<survey_data>\n${JSON.stringify(data)}\n</survey_data>`,
       },
     ],
-  });
+  };
+
+  // Try the preferred model first, then fall back if the account can't use it.
+  const models = [
+    process.env.ANTHROPIC_MODEL,
+    "claude-sonnet-5-5",
+    "claude-sonnet-5",
+    "claude-sonnet-4-6",
+    "claude-sonnet-4-5",
+  ].filter((m, i, a): m is string => Boolean(m) && a.indexOf(m) === i);
+
+  let msg: Anthropic.Message | undefined;
+  let lastError: unknown;
+  for (const model of models) {
+    try {
+      msg = await client.messages.create({ ...params, model });
+      break;
+    } catch (e) {
+      lastError = e;
+      const err = e as { status?: number; message?: string };
+      const modelProblem =
+        err.status === 404 || (err.status === 400 && /model/i.test(err.message ?? ""));
+      console.error(`Readout model ${model} failed`, err.status, err.message);
+      if (!modelProblem) throw e;
+    }
+  }
+  if (!msg) throw lastError;
 
   const block = msg.content.find((b) => b.type === "tool_use");
   if (!block || block.type !== "tool_use") throw new Error("NO_READOUT");
