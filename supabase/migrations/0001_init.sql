@@ -190,10 +190,10 @@ insert into public.templates (id, name, version, description, questions) values 
      "text": "Split a typical week across these. They add up to 100%.",
      "parts": [
        {"id": "high", "label": "High value"},
-       {"id": "mid", "label": "Low to mid value"},
-       {"id": "none", "label": "Non value"},
-       {"id": "negative", "label": "Negative value (rework)"},
-       {"id": "improving", "label": "Improving the work"}
+       {"id": "medium", "label": "Medium value"},
+       {"id": "low", "label": "Low value"},
+       {"id": "none", "label": "No value"},
+       {"id": "negative", "label": "Negative value"}
      ], "required": true},
     {"id": "decision_time", "type": "choice", "text": "How long does a typical decision take?",
      "options": ["Same day", "Within a week", "A few weeks", "Longer"], "required": true},
