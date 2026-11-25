@@ -3,6 +3,10 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { MIN_RESPONSES_FOR_READOUT } from "@/lib/site";
+import type { Question } from "@/lib/templates";
+import { computeStats, textAnswers, type ResponseRow } from "@/lib/readout/stats";
+import { synthesize, type Synthesis } from "@/lib/readout/synthesize";
 
 export type NewSurveyState = { error?: string; teamName?: string; closeDate?: string };
 
@@ -92,4 +96,59 @@ export async function deleteSurvey(formData: FormData) {
   await supabase.from("surveys").delete().eq("id", id);
   revalidatePath("/dashboard");
   redirect("/dashboard");
+}
+
+const MAX_READOUTS_PER_DAY = 10;
+
+export async function createReadout(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: survey } = await supabase
+    .from("surveys")
+    .select("id, team_name, status, templates(questions)")
+    .eq("id", id)
+    .single();
+  if (!survey) redirect("/dashboard");
+
+  const { data: rows } = await supabase.from("responses").select("role, answers").eq("survey_id", id);
+  const responses = (rows ?? []) as ResponseRow[];
+  if (responses.length < MIN_RESPONSES_FOR_READOUT) redirect(`/dashboard/surveys/${id}`);
+
+  const since = new Date(Date.now() - 86400000).toISOString();
+  const { count } = await supabase
+    .from("readouts")
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", since);
+  if ((count ?? 0) >= MAX_READOUTS_PER_DAY) redirect(`/dashboard/surveys/${id}?error=limit`);
+
+  const questions = ((survey.templates as unknown as { questions: Question[] } | null)?.questions ?? []) as Question[];
+  const stats = computeStats(questions, responses);
+
+  let synthesis: Synthesis;
+  try {
+    synthesis = await synthesize({
+      teamName: survey.team_name,
+      stats,
+      texts: textAnswers(questions, responses),
+    });
+  } catch (e) {
+    const code = e instanceof Error && e.message === "NO_API_KEY" ? "setup" : "ai";
+    redirect(`/dashboard/surveys/${id}?error=${code}`);
+  }
+
+  const { error } = await supabase.from("readouts").insert({
+    survey_id: id,
+    response_count: responses.length,
+    stats,
+    synthesis,
+  });
+  if (error) redirect(`/dashboard/surveys/${id}?error=save`);
+
+  revalidatePath(`/dashboard/surveys/${id}`);
+  redirect(`/dashboard/surveys/${id}/readout`);
 }

@@ -14,3 +14,9 @@ body {
   background: #ffffff;
   color: #1a1a1a;
 }
+
+@media print {
+  header.bg-navy { display: none; }
+  main { padding-top: 0 !important; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

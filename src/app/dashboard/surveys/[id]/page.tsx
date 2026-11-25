@@ -3,18 +3,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_RESPONSES_FOR_READOUT, shareLink } from "@/lib/site";
-import { closeSurvey, reopenSurvey } from "../../actions";
+import { closeSurvey, createReadout, reopenSurvey } from "../../actions";
+import { SubmitButton } from "./submit-button";
 import { DeleteButton } from "./delete-button";
 import { CopyLink } from "./copy-link";
 
 export const metadata = { title: "Survey | Team Starters" };
+export const maxDuration = 120;
 
 export default function SurveyPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ new?: string }>;
+  searchParams: Promise<{ new?: string; error?: string }>;
 }) {
   return (
     <div>
@@ -33,10 +35,10 @@ async function SurveyDetail({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ new?: string }>;
+  searchParams: Promise<{ new?: string; error?: string }>;
 }) {
   const { id } = await params;
-  const { new: isNew } = await searchParams;
+  const { new: isNew, error } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
@@ -56,6 +58,13 @@ async function SurveyDetail({
       .eq("role", "leader"),
   ]);
   const responses = total ?? 0;
+  const { data: latest } = await supabase
+    .from("readouts")
+    .select("id, response_count, created_at")
+    .eq("survey_id", id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const teamResponses = responses - (leaderCount ?? 0);
   const open = survey.status === "open";
   const template = (survey.templates as unknown as { name: string } | null)?.name ?? "Team Starter";
@@ -97,17 +106,51 @@ async function SurveyDetail({
 
       <section className="mt-8 rounded-md border border-line p-6">
         <h2 className="text-lg font-bold text-navy">Readout</h2>
+        {error && (
+          <p className="mt-2 rounded-md bg-red-50 p-3 text-sm text-red-800">
+            {ERRORS[error] ?? "Something went wrong. Try again."}
+          </p>
+        )}
         {responses < MIN_RESPONSES_FOR_READOUT ? (
           <p className="mt-2 text-gray-600">
             The readout needs at least {MIN_RESPONSES_FOR_READOUT} responses so no one can be
             identified. {MIN_RESPONSES_FOR_READOUT - responses} more to go.
           </p>
-        ) : open ? (
-          <p className="mt-2 text-gray-600">
-            Close the survey when everyone has answered, and the readout will be ready.
-          </p>
         ) : (
-          <p className="mt-2 text-gray-600">The readout is coming in the next build step.</p>
+          <div className="mt-2 space-y-3">
+            {latest ? (
+              <p className="text-gray-600">
+                Your readout covers {latest.response_count} responses.{" "}
+                {latest.response_count < responses &&
+                  `${responses - latest.response_count} more have come in since. Create a new readout to include them.`}
+              </p>
+            ) : (
+              <p className="text-gray-600">
+                {open
+                  ? "You can create the readout now, or wait until everyone has answered. Close the survey when you're done."
+                  : "Everyone's in. Create the readout to see what your team said."}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-3">
+              {latest && (
+                <Link
+                  href={`/dashboard/surveys/${survey.id}/readout`}
+                  className="rounded-md bg-navy px-5 py-2 font-semibold text-white hover:bg-navy-2"
+                >
+                  View readout
+                </Link>
+              )}
+              {(!latest || latest.response_count < responses) && (
+                <form action={createReadout}>
+                  <input type="hidden" name="id" value={survey.id} />
+                  <SubmitButton
+                    label={latest ? "Create a new readout" : "Create readout"}
+                    pendingLabel="Writing your readout... (about a minute)"
+                  />
+                </form>
+              )}
+            </div>
+          </div>
         )}
       </section>
 
@@ -132,6 +175,13 @@ async function SurveyDetail({
     </div>
   );
 }
+
+const ERRORS: Record<string, string> = {
+  setup: "The readout isn't set up yet. The AI key still needs to be added.",
+  ai: "The readout couldn't be written just now. Try again in a minute.",
+  save: "The readout was written but couldn't be saved. Try again.",
+  limit: "You've reached today's limit of readouts. Try again tomorrow.",
+};
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
