@@ -1,16 +1,16 @@
--- Value Starter v3 (Nov 25): sharper measures question, "your" week, and up to three changes, ranked.
+-- Value Starter v3 (Nov 25): customers listed in order, sharper measures question, "your" week, and up to three changes, ranked.
 -- Surveys already running keep their own copy of the questions (see 0005).
 update public.templates
 set version = 3,
     questions = $json$[
   {"id": "role", "type": "choice", "text": "Are you the team's leader or a team member?",
    "options": ["Leader", "Team member"], "required": true},
-  {"id": "customers", "type": "text", "text": "Who depends on our work the most?",
-   "hint": "Your customers can be outside the company or other teams inside it.", "required": true},
+  {"id": "customers", "type": "text", "text": "Who are our customers? List the most important first.",
+   "hint": "They can be outside the company, other teams inside it, or both.", "required": true},
   {"id": "value", "type": "text", "text": "In one or two sentences, how would you describe the value we create for them?",
    "required": true},
   {"id": "score", "type": "scale", "text": "If they rated that value from 1 to 10, what would they say?",
-   "hint": "If you named more than one, think about the most important.",
+   "hint": "Think about the first one you listed.",
    "min": 1, "max": 10, "minLabel": "They'd barely notice us", "maxLabel": "They couldn't do without us",
    "required": true},
   {"id": "score_why", "type": "text", "text": "Why that score?", "required": true},
