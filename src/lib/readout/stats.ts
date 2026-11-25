@@ -134,6 +134,15 @@ export function textAnswers(questions: Question[], rows: ResponseRow[]) {
   };
   for (const q of questions) {
     if (q.type === "text") collect(q.id, q.text, (r) => r.answers[q.id]);
+    if (q.type === "list") {
+      const get = (role: "team" | "leader") =>
+        rows
+          .filter((r) => r.role === role)
+          .flatMap((r) => (Array.isArray(r.answers[q.id]) ? (r.answers[q.id] as string[]) : []))
+          .map((t) => String(t).trim())
+          .filter(Boolean);
+      out.push({ id: q.id, question: q.text, team: get("team"), leader: get("leader") });
+    }
     if (q.type === "buckets") {
       for (const p of q.parts) {
         collect(`${q.id}.${p.id}`, `Work they put in the "${p.label}" bucket`, (r) =>

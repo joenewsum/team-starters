@@ -6,9 +6,13 @@ export type Question =
   | (Base & { type: "choice"; options: string[] })
   | (Base & { type: "scale"; min: number; max: number; minLabel?: string; maxLabel?: string })
   | (Base & { type: "buckets"; parts: Part[] })
+  | (Base & { type: "list"; count: number; placeholder?: string })
   | (Base & { type: "mix"; parts: Part[] });
 
-export type Answers = Record<string, string | number | Record<string, number> | Record<string, string>>;
+export type Answers = Record<
+  string,
+  string | number | string[] | Record<string, number> | Record<string, string>
+>;
 
 // Checks answers against the template on the server, so nothing odd gets stored.
 export function validateAnswers(
@@ -38,6 +42,14 @@ export function validateAnswers(
         continue;
       }
       answers[q.id] = n;
+    } else if (q.type === "list") {
+      const arr = Array.isArray(v) ? v : [];
+      const items = arr
+        .slice(0, q.count)
+        .map((x) => (typeof x === "string" ? x.trim().slice(0, 1000) : ""))
+        .filter(Boolean);
+      if (q.required && items.length === 0) return { ok: false, error: `Please answer: ${q.text}` };
+      if (items.length) answers[q.id] = items;
     } else if (q.type === "buckets") {
       const obj = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
       const out: Record<string, string> = {};

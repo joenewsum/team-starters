@@ -33,6 +33,7 @@ function schemaFor(q: Question): object {
   if (q.type === "text") return { type: "string" };
   if (q.type === "choice") return { type: "string", enum: q.options };
   if (q.type === "scale") return { type: "integer", minimum: q.min, maximum: q.max };
+  if (q.type === "list") return { type: "array", items: { type: "string" }, maxItems: q.count };
   const props = Object.fromEntries(
     q.parts.map((p) => [p.id, q.type === "mix" ? { type: "integer", description: `${p.label} %` } : { type: "string", description: p.label }]),
   );

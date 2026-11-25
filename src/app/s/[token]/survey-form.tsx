@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import type { Question } from "@/lib/templates";
 import { submitResponse } from "./actions";
 
-type Values = Record<string, string | number | Record<string, number> | Record<string, string>>;
+type Values = Record<string, string | number | string[] | Record<string, number> | Record<string, string>>;
 
 export function SurveyForm({ token, questions }: { token: string; questions: Question[] }) {
   const [values, setValues] = useState<Values>(() => {
@@ -12,6 +12,7 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
     for (const q of questions) {
       if (q.type === "mix") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, 0]));
       if (q.type === "buckets") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, ""]));
+      if (q.type === "list") v[q.id] = Array.from({ length: q.count }, () => "");
     }
     return v;
   });
@@ -125,6 +126,27 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
                   </span>
                 </div>
               )}
+            </div>
+          )}
+
+          {q.type === "list" && (
+            <div className="mt-3 space-y-2">
+              {(values[q.id] as string[]).map((item, k) => (
+                <div key={k} className="flex items-start gap-3">
+                  <span className="mt-3 w-5 shrink-0 text-right font-semibold text-gold-dark">{k + 1}</span>
+                  <textarea
+                    rows={2}
+                    maxLength={1000}
+                    value={item}
+                    onChange={(e) => {
+                      const next = [...(values[q.id] as string[])];
+                      next[k] = e.target.value;
+                      set(q.id, next);
+                    }}
+                    className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-navy focus:outline-none"
+                  />
+                </div>
+              ))}
             </div>
           )}
 
