@@ -192,8 +192,7 @@ insert into public.templates (id, name, version, description, questions) values 
        {"id": "high", "label": "High value"},
        {"id": "medium", "label": "Medium value"},
        {"id": "low", "label": "Low value"},
-       {"id": "none", "label": "No value"},
-       {"id": "negative", "label": "Negative value"}
+       {"id": "none", "label": "No value"}
      ], "required": true},
     {"id": "decision_time", "type": "choice", "text": "How long does a typical decision take?",
      "options": ["Same day", "Within a week", "A few weeks", "Longer"], "required": true},
