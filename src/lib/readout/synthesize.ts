@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Stats } from "./stats";
 
-export type Theme = { theme: string; mentions: number };
+export type Theme = { theme: string; mentions: number; ranked_first?: number };
 export type Alignment = {
   topic: string;
   agreement: "Strong" | "Mixed" | "Low";
@@ -104,9 +104,18 @@ const readoutTool = {
       },
       mix_read: { type: "string", description: "Two or three sentences on the week split numbers." },
       one_change: {
-        ...themeSchema,
+        type: "array",
         description:
-          "The changes people would make (each person could list up to three), as themes with how many people mentioned each. Empty if no one answered.",
+          "The changes people would make, as themes. Each person listed up to three, ranked; answers are tagged [ranked 1], [ranked 2], [ranked 3]. Order themes by priority, weighting first choices most. Empty if no one answered.",
+        items: {
+          type: "object",
+          properties: {
+            theme: { type: "string" },
+            mentions: { type: "integer", description: "How many people listed it at any rank." },
+            ranked_first: { type: "integer", description: "How many people ranked it first." },
+          },
+          required: ["theme", "mentions", "ranked_first"],
+        },
       },
       discussion_questions: { type: "array", items: { type: "string" }, description: "3 questions for the team meeting." },
       next_steps: { type: "array", items: { type: "string" }, description: "3 concrete next steps for the leader." },

@@ -295,8 +295,11 @@ function Themes({ items, total }: { items: Theme[]; total: number }) {
       {items.map((t) => (
         <li key={t.theme} className="flex items-start justify-between gap-4">
           <span className="text-gray-800">{t.theme}</span>
-          <span className="shrink-0 text-sm text-gray-500">
+          <span className="shrink-0 text-right text-sm text-gray-500">
             {t.mentions} of {total}
+            {typeof t.ranked_first === "number" && t.ranked_first > 0 && (
+              <span className="block text-xs text-gold-dark">{t.ranked_first} ranked it first</span>
+            )}
           </span>
         </li>
       ))}

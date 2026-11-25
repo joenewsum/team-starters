@@ -131,6 +131,7 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
 
           {q.type === "list" && (
             <div className="mt-3 space-y-2">
+              {q.ranked && <p className="text-xs text-gray-500">1 = most important</p>}
               {(values[q.id] as string[]).map((item, k) => (
                 <div key={k} className="flex items-start gap-3">
                   <span className="mt-3 w-5 shrink-0 text-right font-semibold text-gold-dark">{k + 1}</span>

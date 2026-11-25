@@ -6,7 +6,7 @@ export type Question =
   | (Base & { type: "choice"; options: string[] })
   | (Base & { type: "scale"; min: number; max: number; minLabel?: string; maxLabel?: string })
   | (Base & { type: "buckets"; parts: Part[] })
-  | (Base & { type: "list"; count: number; placeholder?: string })
+  | (Base & { type: "list"; count: number; ranked?: boolean; placeholder?: string })
   | (Base & { type: "mix"; parts: Part[] });
 
 export type Answers = Record<
@@ -44,6 +44,7 @@ export function validateAnswers(
       answers[q.id] = n;
     } else if (q.type === "list") {
       const arr = Array.isArray(v) ? v : [];
+      // Keep the order people gave, so ranked lists stay ranked.
       const items = arr
         .slice(0, q.count)
         .map((x) => (typeof x === "string" ? x.trim().slice(0, 1000) : ""))

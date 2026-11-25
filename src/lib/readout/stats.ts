@@ -138,9 +138,12 @@ export function textAnswers(questions: Question[], rows: ResponseRow[]) {
       const get = (role: "team" | "leader") =>
         rows
           .filter((r) => r.role === role)
-          .flatMap((r) => (Array.isArray(r.answers[q.id]) ? (r.answers[q.id] as string[]) : []))
-          .map((t) => String(t).trim())
-          .filter(Boolean);
+          .flatMap((r) =>
+            (Array.isArray(r.answers[q.id]) ? (r.answers[q.id] as string[]) : [])
+              .map((t) => String(t).trim())
+              .filter(Boolean)
+              .map((t, i) => (q.ranked ? `[ranked ${i + 1}] ${t}` : t)),
+          );
       out.push({ id: q.id, question: q.text, team: get("team"), leader: get("leader") });
     }
     if (q.type === "buckets") {

@@ -1,4 +1,4 @@
--- Value Starter v3 (Nov 25): sharper measures question, "your" week, and up to three changes.
+-- Value Starter v3 (Nov 25): sharper measures question, "your" week, and up to three changes, ranked.
 -- Surveys already running keep their own copy of the questions (see 0005).
 update public.templates
 set version = 3,
@@ -33,8 +33,8 @@ set version = 3,
      {"id": "low", "label": "Low value"},
      {"id": "none", "label": "No value"}
    ], "required": true},
-  {"id": "changes", "type": "list", "count": 3,
+  {"id": "changes", "type": "list", "count": 3, "ranked": true,
    "text": "If you could change up to three things to create more value, what would they be?",
-   "hint": "Optional. One is fine.", "required": false}
+   "hint": "Optional. Put the most important first. One is fine.", "required": false}
 ]$json$::jsonb
 where id = 'value-starter';
