@@ -1,0 +1,171 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import type { Question } from "@/lib/templates";
+import { submitResponse } from "./actions";
+
+type Values = Record<string, string | Record<string, number>>;
+
+export function SurveyForm({ token, questions }: { token: string; questions: Question[] }) {
+  const [values, setValues] = useState<Values>(() => {
+    const v: Values = {};
+    for (const q of questions) {
+      if (q.type === "mix") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, 0]));
+    }
+    return v;
+  });
+  const [error, setError] = useState<string>();
+  const [done, setDone] = useState(false);
+  const [pending, start] = useTransition();
+
+  const set = (id: string, val: string | Record<string, number>) =>
+    setValues((prev) => ({ ...prev, [id]: val }));
+
+  if (done) {
+    return (
+      <div className="rounded-md border border-gold bg-cream p-8 text-center">
+        <p className="text-2xl font-bold text-navy">Thank you</p>
+        <p className="mt-2 text-gray-700">
+          Your answers are in. Your leader will share what the team said.
+        </p>
+        <a
+          href="https://www.stratechi.com/exceptional-leadership/"
+          className="mt-6 inline-block text-sm font-semibold text-gold-dark underline"
+        >
+          See how exceptional teams create more value
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className="space-y-8"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setError(undefined);
+        start(async () => {
+          const res = await submitResponse(token, values);
+          if (res.ok) {
+            setDone(true);
+            window.scrollTo({ top: 0 });
+          } else setError(res.error);
+        });
+      }}
+    >
+      {questions.map((q, i) => (
+        <fieldset key={q.id} className="rounded-md border border-line p-5">
+          <legend className="px-1 text-sm font-semibold text-gold-dark">
+            {i + 1} of {questions.length}
+          </legend>
+          <p className="font-semibold text-navy">{q.text}</p>
+
+          {q.type === "text" && (
+            <textarea
+              required={q.required}
+              maxLength={2000}
+              rows={3}
+              value={(values[q.id] as string) ?? ""}
+              onChange={(e) => set(q.id, e.target.value)}
+              className="mt-3 w-full rounded-md border border-gray-300 px-4 py-3 focus:border-navy focus:outline-none"
+            />
+          )}
+
+          {q.type === "choice" && (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {q.options.map((o) => (
+                <label
+                  key={o}
+                  className={`flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 ${
+                    values[q.id] === o ? "border-navy bg-cream" : "border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={q.id}
+                    value={o}
+                    required={q.required}
+                    checked={values[q.id] === o}
+                    onChange={() => set(q.id, o)}
+                  />
+                  {o}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {q.type === "mix" && (
+            <MixInput
+              parts={q.parts}
+              value={values[q.id] as Record<string, number>}
+              onChange={(v) => set(q.id, v)}
+            />
+          )}
+        </fieldset>
+      ))}
+
+      {error && <p className="text-red-700">{error}</p>}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full rounded-md bg-navy px-6 py-4 text-lg font-semibold text-white hover:bg-navy-2 disabled:opacity-60"
+      >
+        {pending ? "Sending..." : "Submit my answers"}
+      </button>
+      <p className="text-center text-xs text-gray-500">
+        Anonymous. We don&apos;t store your name, email, or IP address with your answers.
+      </p>
+    </form>
+  );
+}
+
+function MixInput({
+  parts,
+  value,
+  onChange,
+}: {
+  parts: { id: string; label: string }[];
+  value: Record<string, number>;
+  onChange: (v: Record<string, number>) => void;
+}) {
+  const total = parts.reduce((s, p) => s + (value[p.id] ?? 0), 0);
+  const left = 100 - total;
+  return (
+    <div className="mt-3 space-y-4">
+      {parts.map((p) => (
+        <div key={p.id}>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-800">{p.label}</span>
+            <span className="flex items-center gap-1">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={5}
+                value={value[p.id] ?? 0}
+                onChange={(e) => onChange({ ...value, [p.id]: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
+                className="w-16 rounded border border-gray-300 px-2 py-1 text-right"
+                aria-label={`${p.label} percent`}
+              />
+              %
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={value[p.id] ?? 0}
+            onChange={(e) => onChange({ ...value, [p.id]: Number(e.target.value) })}
+            className="mt-1 w-full accent-navy"
+            aria-label={p.label}
+          />
+        </div>
+      ))}
+      <p className={`text-sm font-semibold ${left === 0 ? "text-green-700" : "text-gold-dark"}`}>
+        {left === 0 ? "Adds up to 100%" : left > 0 ? `${left}% left to place` : `${-left}% over 100%`}
+      </p>
+    </div>
+  );
+}

@@ -9,8 +9,8 @@ Free team surveys from Stratechi. A leader picks a Team Starter, shares one link
 
 ## Build status
 1. App, sign-in, and database: done
-2. Survey engine and the Value Starter template
-3. Respondent flow
+2. Survey engine and the Value Starter template: done
+3. Respondent flow: done
 4. Dashboard
 5. Readout: stats and AI synthesis
 6. PDF download

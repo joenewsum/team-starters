@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -51,12 +52,12 @@ async function DashboardContent() {
       <section className="mt-10">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-navy">Current surveys</h2>
-          <span
-            className="cursor-not-allowed rounded-md bg-gold px-4 py-2 text-sm font-semibold text-navy opacity-70"
-            title="Coming in the next build step"
+          <Link
+            href="/dashboard/new"
+            className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-navy hover:opacity-90"
           >
             Start a new survey
-          </span>
+          </Link>
         </div>
         <SurveyList items={current} empty="No open surveys yet. Start one to get your team's view." />
       </section>
@@ -76,14 +77,20 @@ function SurveyList({ items, empty }: { items: SurveyRow[]; empty: string }) {
   return (
     <ul className="mt-4 divide-y divide-line rounded-md border border-line">
       {items.map((s) => (
-        <li key={s.id} className="flex items-center justify-between p-4">
-          <div>
-            <p className="font-semibold text-navy">{s.team_name}</p>
-            <p className="text-sm text-gray-600">{s.templates?.name ?? "Team Starter"}</p>
-          </div>
-          <p className="text-sm text-gray-500">
-            {s.close_date ? `Closes ${s.close_date}` : new Date(s.created_at).toLocaleDateString()}
-          </p>
+        <li key={s.id}>
+          <Link href={`/dashboard/surveys/${s.id}`} className="flex items-center justify-between p-4 hover:bg-cream">
+            <div>
+              <p className="font-semibold text-navy">{s.team_name}</p>
+              <p className="text-sm text-gray-600">{s.templates?.name ?? "Team Starter"}</p>
+            </div>
+            <p className="text-sm text-gray-500">
+              {s.status === "open"
+                ? s.close_date
+                  ? `Closes ${s.close_date}`
+                  : "Open"
+                : `Started ${s.created_at.slice(0, 10)}`}
+            </p>
+          </Link>
         </li>
       ))}
     </ul>

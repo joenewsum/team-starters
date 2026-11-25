@@ -1,0 +1,27 @@
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+import { validateAnswers, type Question } from "@/lib/templates";
+
+export type SubmitResult = { ok: boolean; error?: string };
+
+export async function submitResponse(token: string, rawAnswers: unknown): Promise<SubmitResult> {
+  if (!/^[0-9a-f]{24}$/.test(token)) return { ok: false, error: "This link isn't valid." };
+
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("get_open_survey", { p_token: token });
+  const survey = Array.isArray(data) ? data[0] : null;
+  if (!survey) return { ok: false, error: "This survey is closed." };
+
+  const result = validateAnswers(survey.questions as Question[], rawAnswers);
+  if (!result.ok) return { ok: false, error: result.error };
+
+  const role = result.answers.role === "Leader" ? "leader" : "team";
+  const { data: saved, error } = await supabase.rpc("submit_response", {
+    p_token: token,
+    p_role: role,
+    p_answers: result.answers,
+  });
+  if (error || saved !== true) return { ok: false, error: "We couldn't save your answers. Try again." };
+  return { ok: true };
+}
