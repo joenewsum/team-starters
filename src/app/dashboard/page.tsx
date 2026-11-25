@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/admin";
 
 export const metadata = { title: "Dashboard | Team Starters" };
 
@@ -16,7 +17,9 @@ type SurveyRow = {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<p className="text-gray-500">Loading your surveys...</p>}>
+    <Suspense
+      fallback={<p className="text-gray-500">Loading your surveys...</p>}
+    >
       <DashboardContent />
     </Suspense>
   );
@@ -44,9 +47,21 @@ async function DashboardContent() {
           <h1 className="text-3xl font-bold text-navy">Your Team Starters</h1>
           <p className="mt-1 text-gray-600">Signed in as {user.email}</p>
         </div>
-        <form action="/auth/signout" method="post">
-          <button className="text-sm text-gray-600 underline hover:text-navy">Sign out</button>
-        </form>
+        <div className="flex items-center gap-4">
+          {isAdmin(user.email) && (
+            <Link
+              href="/dashboard/simulate"
+              className="text-sm font-semibold text-gold-dark underline"
+            >
+              Simulate a team
+            </Link>
+          )}
+          <form action="/auth/signout" method="post">
+            <button className="text-sm text-gray-600 underline hover:text-navy">
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
 
       <section className="mt-10">
@@ -59,12 +74,20 @@ async function DashboardContent() {
             Start a new survey
           </Link>
         </div>
-        <SurveyList items={current} empty="No open surveys yet. Start one to get your team's view." />
+        <SurveyList
+          items={current}
+          empty="No open surveys yet. Start one to get your team's view."
+        />
       </section>
 
       <section className="mt-10">
-        <h2 className="text-xl font-bold text-navy">Past surveys and readouts</h2>
-        <SurveyList items={past} empty="Closed surveys and their readouts will show up here." />
+        <h2 className="text-xl font-bold text-navy">
+          Past surveys and readouts
+        </h2>
+        <SurveyList
+          items={past}
+          empty="Closed surveys and their readouts will show up here."
+        />
       </section>
     </div>
   );
@@ -72,16 +95,25 @@ async function DashboardContent() {
 
 function SurveyList({ items, empty }: { items: SurveyRow[]; empty: string }) {
   if (items.length === 0) {
-    return <p className="mt-4 rounded-md border border-dashed border-line p-6 text-gray-500">{empty}</p>;
+    return (
+      <p className="mt-4 rounded-md border border-dashed border-line p-6 text-gray-500">
+        {empty}
+      </p>
+    );
   }
   return (
     <ul className="mt-4 divide-y divide-line rounded-md border border-line">
       {items.map((s) => (
         <li key={s.id}>
-          <Link href={`/dashboard/surveys/${s.id}`} className="flex items-center justify-between p-4 hover:bg-cream">
+          <Link
+            href={`/dashboard/surveys/${s.id}`}
+            className="flex items-center justify-between p-4 hover:bg-cream"
+          >
             <div>
               <p className="font-semibold text-navy">{s.team_name}</p>
-              <p className="text-sm text-gray-600">{s.templates?.name ?? "Team Starter"}</p>
+              <p className="text-sm text-gray-600">
+                {s.templates?.name ?? "Team Starter"}
+              </p>
             </div>
             <p className="text-sm text-gray-500">
               {s.status === "open"

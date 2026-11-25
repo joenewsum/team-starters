@@ -16,7 +16,7 @@ export default function SurveyPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ new?: string; error?: string }>;
+  searchParams: Promise<{ new?: string; error?: string; sim?: string }>;
 }) {
   return (
     <div>
@@ -35,10 +35,10 @@ async function SurveyDetail({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ new?: string; error?: string }>;
+  searchParams: Promise<{ new?: string; error?: string; sim?: string }>;
 }) {
   const { id } = await params;
-  const { new: isNew, error } = await searchParams;
+  const { new: isNew, error, sim } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
@@ -72,6 +72,11 @@ async function SurveyDetail({
 
   return (
     <div className="mt-4">
+      {sim && (
+        <div className="mb-6 rounded-md border border-gold bg-cream p-4 text-navy">
+          Simulation done: {sim} answers added. Create the readout below to see how it reads.
+        </div>
+      )}
       {isNew && (
         <div className="mb-6 rounded-md border border-gold bg-cream p-4 text-navy">
           Your survey is ready. Copy the link below and send it to your team.
