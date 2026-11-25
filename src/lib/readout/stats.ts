@@ -35,21 +35,34 @@ export function computeStats(questions: Question[], rows: ResponseRow[]): Stats 
 
   for (const q of questions) {
     if (q.type === "mix") {
-      const avg: Record<string, number> = {};
-      const range: Record<string, { min: number; max: number }> = {};
-      for (const p of q.parts) {
-        const vals = team
-          .map((r) => (r.answers[q.id] as Record<string, number> | undefined)?.[p.id])
-          .filter((n): n is number => typeof n === "number");
-        avg[p.id] = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
-        range[p.id] = vals.length ? { min: Math.min(...vals), max: Math.max(...vals) } : { min: 0, max: 0 };
-      }
+      // Scale each person's split to 100% across the current parts, so a
+      // response from an older version of the question still adds up.
+      const shares = (r: ResponseRow) => {
+        const raw = (r.answers[q.id] ?? {}) as Record<string, number>;
+        const vals = q.parts.map((p) => (typeof raw[p.id] === "number" ? raw[p.id] : 0));
+        const sum = vals.reduce((a, b) => a + b, 0);
+        return sum > 0 ? vals.map((v) => (v / sum) * 100) : null;
+      };
+      const teamShares = team.map(shares).filter((v): v is number[] => v !== null);
+      const avgRaw = q.parts.map((_, i) =>
+        teamShares.length ? teamShares.reduce((a, v) => a + v[i], 0) / teamShares.length : 0,
+      );
+      const avg = Object.fromEntries(q.parts.map((p, i) => [p.id, roundTo100(avgRaw)[i]]));
+      const range = Object.fromEntries(
+        q.parts.map((p, i) => {
+          const col = teamShares.map((v) => Math.round(v[i]));
+          return [p.id, col.length ? { min: Math.min(...col), max: Math.max(...col) } : { min: 0, max: 0 }];
+        }),
+      );
+      const leaderShares = leader ? shares(leader) : null;
       mix.push({
         id: q.id,
         question: q.text,
         parts: q.parts,
         team: avg,
-        leader: leader ? ((leader.answers[q.id] as Record<string, number>) ?? null) : null,
+        leader: leaderShares
+          ? Object.fromEntries(q.parts.map((p, i) => [p.id, roundTo100(leaderShares)[i]]))
+          : null,
         range,
       });
     } else if (q.type === "choice" && q.id !== "role") {
@@ -93,4 +106,21 @@ export function textAnswers(questions: Question[], rows: ResponseRow[]) {
         .map((r) => String(r.answers[q.id] ?? "").trim())
         .filter(Boolean),
     }));
+}
+
+// Round percentages so they still add up to exactly 100.
+function roundTo100(values: number[]): number[] {
+  const total = values.reduce((a, b) => a + b, 0);
+  if (total === 0) return values.map(() => 0);
+  const floors = values.map((v) => Math.floor(v));
+  let left = Math.round(total) - floors.reduce((a, b) => a + b, 0);
+  const order = values
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (const { i } of order) {
+    if (left <= 0) break;
+    floors[i] += 1;
+    left -= 1;
+  }
+  return floors;
 }

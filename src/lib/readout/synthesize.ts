@@ -86,6 +86,8 @@ How to write:
 - Group open answers into themes and count how many people mentioned each. Merge answers that mean the same thing.
 - Never quote anyone word for word and never include a detail that could identify a person.
 - Keep the leader's view separate from the team's. Name gaps plainly and without blame.
+- Agreement: "Strong" only when most of the team named the same theme and the leader's view matches. "Mixed" when there's overlap but different emphasis or a leader gap. "Low" when answers point in different directions.
+- Use the value mix numbers exactly as given. Don't add percentages that aren't in the data.
 - Base everything on the answers. If the team gave little to go on, say so.
 - Value means the value the team creates: more and better outcomes for the people it serves and for the business.`;
 

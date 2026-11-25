@@ -45,7 +45,7 @@ export async function createSurvey(
 
   const { data: template } = await supabase
     .from("templates")
-    .select("id, version")
+    .select("id, version, questions")
     .eq("id", templateId)
     .single();
   if (!template) return { ...keep, error: "That Team Starter isn't available." };
@@ -56,6 +56,7 @@ export async function createSurvey(
       leader_id: user.id,
       template_id: template.id,
       template_version: template.version,
+      questions: template.questions,
       team_name: teamName,
       close_date: closeDate || null,
     })
@@ -110,7 +111,7 @@ export async function createReadout(formData: FormData) {
 
   const { data: survey } = await supabase
     .from("surveys")
-    .select("id, team_name, status, templates(questions)")
+    .select("id, team_name, status, questions, templates(questions)")
     .eq("id", id)
     .single();
   if (!survey) redirect("/dashboard");
@@ -126,7 +127,9 @@ export async function createReadout(formData: FormData) {
     .gte("created_at", since);
   if ((count ?? 0) >= MAX_READOUTS_PER_DAY) redirect(`/dashboard/surveys/${id}?error=limit`);
 
-  const questions = ((survey.templates as unknown as { questions: Question[] } | null)?.questions ?? []) as Question[];
+  const questions = (survey.questions ??
+    (survey.templates as unknown as { questions: Question[] } | null)?.questions ??
+    []) as Question[];
   const stats = computeStats(questions, responses);
 
   let synthesis: Synthesis;
