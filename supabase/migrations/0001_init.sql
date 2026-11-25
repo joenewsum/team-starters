@@ -77,6 +77,14 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Table access for the app. Row-level security below narrows it to each leader's own rows.
+grant usage on schema public to anon, authenticated;
+grant select on public.templates to anon, authenticated;
+grant select, update on public.leaders to authenticated;
+grant select, insert, update, delete on public.surveys to authenticated;
+grant select on public.responses to authenticated;
+grant select on public.readouts to authenticated;
+
 -- Row-level security: each leader sees only their own data.
 alter table public.leaders   enable row level security;
 alter table public.templates enable row level security;
