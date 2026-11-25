@@ -21,7 +21,7 @@ export async function sendMagicLink(
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${siteUrl}/auth/callback?next=/dashboard` },
+    options: { emailRedirectTo: `${siteUrl}/auth/callback` },
   });
 
   if (error) {

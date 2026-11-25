@@ -4,6 +4,15 @@ import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./env";
 
 // Keeps the sign-in session fresh and guards the leader-only pages.
 export async function updateSession(request: NextRequest) {
+  // If Supabase sends the sign-in link to the home page instead of the
+  // callback, pass the one-time code on to the callback.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && request.nextUrl.pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
   let response = NextResponse.next({ request });
   if (!isSupabaseConfigured) return response;
 
