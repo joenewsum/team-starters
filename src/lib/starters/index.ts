@@ -14,7 +14,7 @@ export type Starter = {
 export const VALUE_STARTER: Starter = {
   id: "value-starter",
   name: "Value Starter",
-  version: 3,
+  version: 4,
   description:
     "Who your customers are, the value you create, and where the week goes.",
   minutes: 10,
@@ -73,6 +73,8 @@ export const VALUE_STARTER: Starter = {
       id: "work_buckets",
       type: "buckets",
       text: "Think about your typical week. What work would you put in each bucket?",
+      hint: "A few words each is fine. List as many as come to mind.",
+      placeholder: "e.g. client calls, weekly report, approvals",
       parts: [
         {
           id: "high",

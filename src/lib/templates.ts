@@ -5,7 +5,7 @@ export type Question =
   | (Base & { type: "text" })
   | (Base & { type: "choice"; options: string[] })
   | (Base & { type: "scale"; min: number; max: number; minLabel?: string; maxLabel?: string })
-  | (Base & { type: "buckets"; parts: Part[] })
+  | (Base & { type: "buckets"; parts: Part[]; placeholder?: string })
   | (Base & { type: "list"; count: number; ranked?: boolean; placeholder?: string })
   | (Base & { type: "mix"; parts: Part[] });
 

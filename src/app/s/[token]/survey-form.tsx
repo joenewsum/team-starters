@@ -153,17 +153,19 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
 
           {q.type === "buckets" && (
             <div className="mt-3 space-y-3">
-              {q.parts.map((p) => (
+              {q.parts.map((p, i) => (
                 <label key={p.id} className="block">
                   <span className="text-sm font-semibold text-gray-800">{p.label}</span>
                   <textarea
-                    rows={2}
+                    rows={1}
                     maxLength={1000}
+                    placeholder={i === 0 ? q.placeholder : undefined}
+                    style={{ fieldSizing: "content" } as React.CSSProperties}
                     value={(values[q.id] as Record<string, string>)?.[p.id] ?? ""}
                     onChange={(e) =>
                       set(q.id, { ...(values[q.id] as Record<string, string>), [p.id]: e.target.value })
                     }
-                    className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 focus:border-navy focus:outline-none"
+                    className="mt-1 min-h-11 w-full resize-none rounded-md border border-gray-300 px-4 py-2 placeholder:text-gray-400 focus:border-navy focus:outline-none"
                   />
                 </label>
               ))}
