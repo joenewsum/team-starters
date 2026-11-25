@@ -19,12 +19,24 @@ export type MixStat = {
   range: Record<string, { min: number; max: number }>;
 };
 
+export type ScaleStat = {
+  id: string;
+  question: string;
+  min: number;
+  max: number;
+  teamAvg: number | null;
+  teamRange: { min: number; max: number } | null;
+  counts: Record<string, number>;
+  leader: number | null;
+};
+
 export type Stats = {
   total: number;
   teamCount: number;
   leaderCount: number;
   mix: MixStat[];
   choices: ChoiceStat[];
+  scales?: ScaleStat[];
 };
 
 export function computeStats(questions: Question[], rows: ResponseRow[]): Stats {
@@ -32,8 +44,26 @@ export function computeStats(questions: Question[], rows: ResponseRow[]): Stats 
   const leader = rows.find((r) => r.role === "leader") ?? null;
   const mix: MixStat[] = [];
   const choices: ChoiceStat[] = [];
+  const scales: ScaleStat[] = [];
 
   for (const q of questions) {
+    if (q.type === "scale") {
+      const vals = team.map((r) => r.answers[q.id]).filter((n): n is number => typeof n === "number");
+      const counts: Record<string, number> = {};
+      for (let n = q.min; n <= q.max; n++) counts[n] = vals.filter((v) => v === n).length;
+      const lv = leader?.answers[q.id];
+      scales.push({
+        id: q.id,
+        question: q.text,
+        min: q.min,
+        max: q.max,
+        teamAvg: vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : null,
+        teamRange: vals.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null,
+        counts,
+        leader: typeof lv === "number" ? lv : null,
+      });
+      continue;
+    }
     if (q.type === "mix") {
       // Scale each person's split to 100% across the current parts, so a
       // response from an older version of the question still adds up.
@@ -87,25 +117,32 @@ export function computeStats(questions: Question[], rows: ResponseRow[]): Stats 
     leaderCount: rows.length - team.length,
     mix,
     choices,
+    scales,
   };
 }
 
 // The open-ended answers, grouped by question, leader kept apart from the team.
 export function textAnswers(questions: Question[], rows: ResponseRow[]) {
-  return questions
-    .filter((q) => q.type === "text")
-    .map((q) => ({
-      id: q.id,
-      question: q.text,
-      team: rows
-        .filter((r) => r.role === "team")
-        .map((r) => String(r.answers[q.id] ?? "").trim())
-        .filter(Boolean),
-      leader: rows
-        .filter((r) => r.role === "leader")
-        .map((r) => String(r.answers[q.id] ?? "").trim())
-        .filter(Boolean),
-    }));
+  const out: { id: string; question: string; team: string[]; leader: string[] }[] = [];
+  const collect = (id: string, question: string, pick: (r: ResponseRow) => unknown) => {
+    const get = (role: "team" | "leader") =>
+      rows
+        .filter((r) => r.role === role)
+        .map((r) => String(pick(r) ?? "").trim())
+        .filter(Boolean);
+    out.push({ id, question, team: get("team"), leader: get("leader") });
+  };
+  for (const q of questions) {
+    if (q.type === "text") collect(q.id, q.text, (r) => r.answers[q.id]);
+    if (q.type === "buckets") {
+      for (const p of q.parts) {
+        collect(`${q.id}.${p.id}`, `Work they put in the "${p.label}" bucket`, (r) =>
+          (r.answers[q.id] as Record<string, string> | undefined)?.[p.id],
+        );
+      }
+    }
+  }
+  return out;
 }
 
 // Round percentages so they still add up to exactly 100.

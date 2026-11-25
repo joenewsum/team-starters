@@ -1,15 +1,14 @@
-export type Question =
-  | { id: string; type: "text"; text: string; required?: boolean }
-  | { id: string; type: "choice"; text: string; options: string[]; required?: boolean }
-  | {
-      id: string;
-      type: "mix";
-      text: string;
-      parts: { id: string; label: string }[];
-      required?: boolean;
-    };
+type Base = { id: string; text: string; hint?: string; required?: boolean };
+type Part = { id: string; label: string };
 
-export type Answers = Record<string, string | Record<string, number>>;
+export type Question =
+  | (Base & { type: "text" })
+  | (Base & { type: "choice"; options: string[] })
+  | (Base & { type: "scale"; min: number; max: number; minLabel?: string; maxLabel?: string })
+  | (Base & { type: "buckets"; parts: Part[] })
+  | (Base & { type: "mix"; parts: Part[] });
+
+export type Answers = Record<string, string | number | Record<string, number> | Record<string, string>>;
 
 // Checks answers against the template on the server, so nothing odd gets stored.
 export function validateAnswers(
@@ -25,13 +24,31 @@ export function validateAnswers(
     if (q.type === "text") {
       const t = typeof v === "string" ? v.trim().slice(0, 2000) : "";
       if (q.required && !t) return { ok: false, error: `Please answer: ${q.text}` };
-      answers[q.id] = t;
+      if (t) answers[q.id] = t;
     } else if (q.type === "choice") {
       if (typeof v !== "string" || !q.options.includes(v)) {
         if (q.required) return { ok: false, error: `Please choose an answer for: ${q.text}` };
         continue;
       }
       answers[q.id] = v;
+    } else if (q.type === "scale") {
+      const n = Number(v);
+      if (!Number.isInteger(n) || n < q.min || n > q.max) {
+        if (q.required) return { ok: false, error: `Please pick a number for: ${q.text}` };
+        continue;
+      }
+      answers[q.id] = n;
+    } else if (q.type === "buckets") {
+      const obj = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+      const out: Record<string, string> = {};
+      for (const p of q.parts) {
+        const t = typeof obj[p.id] === "string" ? (obj[p.id] as string).trim().slice(0, 1000) : "";
+        if (t) out[p.id] = t;
+      }
+      if (q.required && Object.keys(out).length === 0) {
+        return { ok: false, error: `Please fill in at least one bucket for: ${q.text}` };
+      }
+      answers[q.id] = out;
     } else {
       const obj = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
       const mix: Record<string, number> = {};

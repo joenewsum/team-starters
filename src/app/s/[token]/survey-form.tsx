@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import type { Question } from "@/lib/templates";
 import { submitResponse } from "./actions";
 
-type Values = Record<string, string | Record<string, number>>;
+type Values = Record<string, string | number | Record<string, number> | Record<string, string>>;
 
 export function SurveyForm({ token, questions }: { token: string; questions: Question[] }) {
   const [values, setValues] = useState<Values>(() => {
     const v: Values = {};
     for (const q of questions) {
       if (q.type === "mix") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, 0]));
+      if (q.type === "buckets") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, ""]));
     }
     return v;
   });
@@ -18,7 +19,7 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
   const [done, setDone] = useState(false);
   const [pending, start] = useTransition();
 
-  const set = (id: string, val: string | Record<string, number>) =>
+  const set = (id: string, val: Values[string]) =>
     setValues((prev) => ({ ...prev, [id]: val }));
 
   if (done) {
@@ -59,6 +60,7 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
             {i + 1} of {questions.length}
           </legend>
           <p className="font-semibold text-navy">{q.text}</p>
+          {q.hint && <p className="mt-1 text-sm text-gray-500">{q.hint}</p>}
 
           {q.type === "text" && (
             <textarea
@@ -89,6 +91,57 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
                     onChange={() => set(q.id, o)}
                   />
                   {o}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {q.type === "scale" && (
+            <div className="mt-3">
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+                {Array.from({ length: q.max - q.min + 1 }, (_, k) => q.min + k).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => set(q.id, n)}
+                    aria-pressed={values[q.id] === n}
+                    className={`rounded-md border py-3 font-semibold ${
+                      values[q.id] === n
+                        ? "border-navy bg-navy text-white"
+                        : "border-gray-300 text-navy hover:border-navy"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              {(q.minLabel || q.maxLabel) && (
+                <div className="mt-2 flex justify-between text-xs text-gray-500">
+                  <span>
+                    {q.min} = {q.minLabel}
+                  </span>
+                  <span>
+                    {q.max} = {q.maxLabel}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {q.type === "buckets" && (
+            <div className="mt-3 space-y-3">
+              {q.parts.map((p) => (
+                <label key={p.id} className="block">
+                  <span className="text-sm font-semibold text-gray-800">{p.label}</span>
+                  <textarea
+                    rows={2}
+                    maxLength={1000}
+                    value={(values[q.id] as Record<string, string>)?.[p.id] ?? ""}
+                    onChange={(e) =>
+                      set(q.id, { ...(values[q.id] as Record<string, string>), [p.id]: e.target.value })
+                    }
+                    className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 focus:border-navy focus:outline-none"
+                  />
                 </label>
               ))}
             </div>

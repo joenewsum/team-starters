@@ -34,6 +34,7 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
 
   const s = readout.synthesis as Synthesis;
   const stats = readout.stats as Stats;
+  const score = stats.scales?.[0];
   const template = (survey.templates as unknown as { name: string } | null)?.name ?? "Team Starter";
 
   return (
@@ -63,7 +64,9 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
           {s.alignment.map((a) => (
             <div key={a.topic} className="rounded-md border border-line p-5 break-inside-avoid">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-navy">{a.topic}</h3>
+                <h3 className="text-lg font-bold text-navy">
+                  {a.topic === "Customers" ? "Who depends on us" : a.topic === "Value" ? "The value we create" : "The numbers"}
+                </h3>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     a.agreement === "Strong"
@@ -93,6 +96,31 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
           ))}
         </div>
       </Section>
+
+      {score && (
+        <Section title="How they'd score our value">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <BigStat label="Team average" value={score.teamAvg ?? "–"} sub={`out of ${score.max}`} />
+            <BigStat label="Leader" value={score.leader ?? "–"} sub={`out of ${score.max}`} />
+            <BigStat
+              label="Team range"
+              value={score.teamRange ? `${score.teamRange.min} to ${score.teamRange.max}` : "–"}
+              sub="lowest to highest"
+            />
+          </div>
+          {s.score_read && <p className="mt-4 text-gray-700">{s.score_read}</p>}
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <div className="break-inside-avoid">
+              <h3 className="font-bold text-navy">Why that score</h3>
+              <Themes items={s.score_reasons ?? []} total={stats.teamCount} />
+            </div>
+            <div className="break-inside-avoid">
+              <h3 className="font-bold text-navy">What would get us to a 10</h3>
+              <Themes items={s.path_to_10 ?? []} total={stats.teamCount} />
+            </div>
+          </div>
+        </Section>
+      )}
 
       <Section title="A draft value statement">
         <p className="rounded-md bg-cream p-5 text-lg text-navy">{s.value_statement}</p>
@@ -129,37 +157,69 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
           </div>
         ))}
         <p className="mt-4 text-gray-700">{s.mix_read}</p>
+
+        {s.work_map && s.work_map.length > 0 && (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {s.work_map.map((b) => (
+              <div key={b.bucket} className="rounded-md border border-line p-4 break-inside-avoid">
+                <h3 className="font-bold text-navy">{b.bucket}</h3>
+                <Themes items={b.themes} total={stats.teamCount} />
+              </div>
+            ))}
+          </div>
+        )}
+        {s.work_disagreements && s.work_disagreements.length > 0 && (
+          <div className="mt-6 rounded-md bg-cream p-5 break-inside-avoid">
+            <h3 className="font-bold text-navy">Where the team sorts the same work differently</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-gray-800">
+              {s.work_disagreements.map((d) => (
+                <li key={d}>{d}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </Section>
 
-      <Section title="What creates the most value">
-        <Themes items={s.value_moments} total={stats.teamCount} />
-      </Section>
+      {s.value_moments && (
+        <Section title="What creates the most value">
+          <Themes items={s.value_moments} total={stats.teamCount} />
+        </Section>
+      )}
+      {s.drag && (
+        <Section title="What creates little or no value">
+          <Themes items={s.drag} total={stats.teamCount} />
+        </Section>
+      )}
 
-      <Section title="What creates little or no value">
-        <Themes items={s.drag} total={stats.teamCount} />
-      </Section>
+      {s.one_change && s.one_change.length > 0 && (
+        <Section title="Where the team wants to start">
+          <Themes items={s.one_change} total={stats.teamCount} />
+        </Section>
+      )}
 
-      <Section title="Speed">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {stats.choices.map((c) => (
-            <div key={c.id} className="rounded-md border border-line p-4 break-inside-avoid">
-              <p className="text-sm font-semibold text-navy">{c.question}</p>
-              <ul className="mt-2 space-y-1 text-sm">
-                {c.options.map((o) => (
-                  <li key={o} className="flex justify-between">
-                    <span className={c.leader === o ? "font-semibold text-navy" : "text-gray-700"}>
-                      {o}
-                      {c.leader === o ? " (leader)" : ""}
-                    </span>
-                    <span className="text-gray-600">{c.team[o] ?? 0}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-gray-700">{s.speed_read}</p>
-      </Section>
+      {stats.choices.length > 0 && s.speed_read && (
+        <Section title="Speed">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {stats.choices.map((c) => (
+              <div key={c.id} className="rounded-md border border-line p-4 break-inside-avoid">
+                <p className="text-sm font-semibold text-navy">{c.question}</p>
+                <ul className="mt-2 space-y-1 text-sm">
+                  {c.options.map((o) => (
+                    <li key={o} className="flex justify-between">
+                      <span className={c.leader === o ? "font-semibold text-navy" : "text-gray-700"}>
+                        {o}
+                        {c.leader === o ? " (leader)" : ""}
+                      </span>
+                      <span className="text-gray-600">{c.team[o] ?? 0}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-gray-700">{s.speed_read}</p>
+        </Section>
+      )}
 
       <Section title="Questions for your team meeting">
         <ol className="list-decimal space-y-2 pl-5 text-gray-800">
@@ -200,6 +260,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="mb-4 text-2xl font-bold text-navy">{title}</h2>
       {children}
     </section>
+  );
+}
+
+function BigStat({ label, value, sub }: { label: string; value: string | number; sub: string }) {
+  return (
+    <div className="rounded-md border border-line p-4 text-center break-inside-avoid">
+      <p className="text-sm text-gray-600">{label}</p>
+      <p className="mt-1 text-3xl font-bold text-navy">{value}</p>
+      <p className="text-xs text-gray-500">{sub}</p>
+    </div>
   );
 }
 
