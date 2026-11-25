@@ -15,7 +15,7 @@ export function NewSurveyForm({ defaultClose, minDate }: { defaultClose: string;
           <span>
             <span className="block font-semibold text-navy">Value Starter</span>
             <span className="block text-sm text-gray-700">
-              Who depends on your team, the value you create, and where the week goes. 10 questions,
+              Who your customers are, the value you create, and where the week goes. 10 questions,
               about 10 minutes.
             </span>
           </span>

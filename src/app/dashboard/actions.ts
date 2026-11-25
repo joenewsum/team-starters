@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_RESPONSES_FOR_READOUT } from "@/lib/site";
 import type { Question } from "@/lib/templates";
+import { getStarter } from "@/lib/starters";
 import { computeStats, textAnswers, type ResponseRow } from "@/lib/readout/stats";
 import { synthesize, type Synthesis } from "@/lib/readout/synthesize";
 
@@ -43,11 +44,7 @@ export async function createSurvey(
     return { ...keep, error: `You can have up to ${MAX_OPEN_SURVEYS} open surveys. Close one first.` };
   }
 
-  const { data: template } = await supabase
-    .from("templates")
-    .select("id, version, questions")
-    .eq("id", templateId)
-    .single();
+  const template = getStarter(templateId);
   if (!template) return { ...keep, error: "That Team Starter isn't available." };
 
   const { data, error } = await supabase

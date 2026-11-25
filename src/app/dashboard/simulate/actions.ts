@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import { validateAnswers, type Question } from "@/lib/templates";
 import { SCENARIOS, simulateTeam } from "@/lib/simulate";
+import { VALUE_STARTER } from "@/lib/starters";
 
 export type SimState = { error?: string };
 
@@ -23,12 +24,7 @@ export async function runSimulation(_prev: SimState, formData: FormData): Promis
   const size = Math.min(12, Math.max(3, Number(formData.get("size") ?? 6) || 6));
   if (!teamType) return { error: "Pick a team type or describe one." };
 
-  const { data: template } = await supabase
-    .from("templates")
-    .select("id, version, questions")
-    .eq("id", "value-starter")
-    .single();
-  if (!template) return { error: "The Value Starter template wasn't found." };
+  const template = VALUE_STARTER;
 
   const label = teamType.split(/[(,]/)[0].trim().slice(0, 60);
   const { data: survey, error: insertError } = await supabase
@@ -44,7 +40,7 @@ export async function runSimulation(_prev: SimState, formData: FormData): Promis
     .single();
   if (insertError || !survey) return { error: "Couldn't create the survey. Have you run all the database updates?" };
 
-  const questions = template.questions as Question[];
+  const questions: Question[] = template.questions;
   let respondents;
   try {
     respondents = await simulateTeam({ questions, teamType, scenario, size });
