@@ -74,7 +74,6 @@ export const VALUE_STARTER: Starter = {
       type: "buckets",
       text: "Think about your typical week. What work would you put in each bucket?",
       hint: "A few words each is fine. List as many as come to mind.",
-      placeholder: "e.g. client calls, weekly report, approvals",
       parts: [
         {
           id: "high",
