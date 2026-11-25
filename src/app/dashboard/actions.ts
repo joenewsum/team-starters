@@ -137,8 +137,8 @@ export async function createReadout(formData: FormData) {
       texts: textAnswers(questions, responses),
     });
   } catch (e) {
-    const code = e instanceof Error && e.message === "NO_API_KEY" ? "setup" : "ai";
-    redirect(`/dashboard/surveys/${id}?error=${code}`);
+    console.error("Readout AI error", e);
+    redirect(`/dashboard/surveys/${id}?error=${aiErrorCode(e)}`);
   }
 
   const { error } = await supabase.from("readouts").insert({
@@ -151,4 +151,16 @@ export async function createReadout(formData: FormData) {
 
   revalidatePath(`/dashboard/surveys/${id}`);
   redirect(`/dashboard/surveys/${id}/readout`);
+}
+
+function aiErrorCode(e: unknown): string {
+  if (e instanceof Error && e.message === "NO_API_KEY") return "setup";
+  const err = e as { status?: number; message?: string };
+  const msg = (err?.message ?? "").toLowerCase();
+  if (err?.status === 401 || err?.status === 403) return "ai_key";
+  if (msg.includes("credit") || msg.includes("billing")) return "ai_credit";
+  if (err?.status === 404 || msg.includes("model")) return "ai_model";
+  if (err?.status === 429) return "ai_busy";
+  if (err?.status === 529 || (err?.status ?? 0) >= 500) return "ai_busy";
+  return "ai";
 }

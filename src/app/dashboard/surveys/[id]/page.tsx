@@ -179,6 +179,10 @@ async function SurveyDetail({
 const ERRORS: Record<string, string> = {
   setup: "The readout isn't set up yet. The AI key still needs to be added.",
   ai: "The readout couldn't be written just now. Try again in a minute.",
+  ai_key: "The AI key was rejected. Check that the full key is saved in Vercel, then redeploy.",
+  ai_credit: "The AI account is out of credits. Add credits under Billing at platform.claude.com.",
+  ai_model: "The AI model wasn't found. This one is on our side.",
+  ai_busy: "The AI service is busy. Try again in a minute.",
   save: "The readout was written but couldn't be saved. Try again.",
   limit: "You've reached today's limit of readouts. Try again tomorrow.",
 };
