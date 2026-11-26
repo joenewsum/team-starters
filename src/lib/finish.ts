@@ -159,7 +159,7 @@ ${
     : ""
 }
 <p style="margin:0 0 20px;">${btn(p.readoutLink, "Open your readout", true)}${btn(p.answersLink, "Read every answer", false)}</p>
-<p style="font-size:14px;margin:0 0 6px;">Next, bring it to your team. The one-hour session walks you through it: <a href="https://www.stratechi.com/agree-on-our-value/" style="color:#8a6a2e;">Agree on our value</a>.</p>
+<p style="font-size:14px;margin:0 0 6px;">Next, bring it to your team. The team session walks you through it: <a href="https://www.stratechi.com/agree-on-our-value/" style="color:#8a6a2e;">Agree on our value</a>.</p>
 <p style="font-size:13px;color:#6b6b6b;margin:20px 0 0;">Your team's individual answers stay in your account, shuffled and without names.</p>
 </div>`;
   const text = `${p.template} readout: ${p.teamName}

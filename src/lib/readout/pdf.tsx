@@ -211,7 +211,7 @@ export function ReadoutPdf({
           </Text>
         ))}
         <Text style={{ marginTop: 10, color: GOLD_DARK }}>
-          Run the one-hour team session: stratechi.com/agree-on-our-value/
+          Run the team session: stratechi.com/agree-on-our-value/
         </Text>
 
         <View style={st.footer} fixed>

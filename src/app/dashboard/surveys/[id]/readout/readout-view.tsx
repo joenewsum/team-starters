@@ -232,7 +232,7 @@ export function ReadoutView({
         </ol>
         <div className="mt-6 grid gap-3 sm:grid-cols-3 print:hidden">
           <a href="https://www.stratechi.com/agree-on-our-value/" className="rounded-md border-2 border-gold bg-cream p-4 hover:opacity-90">
-            <p className="font-semibold text-navy">Agree on your value in one hour</p>
+            <p className="font-semibold text-navy">Agree on your value with your team</p>
             <p className="text-sm text-gray-600">The team session that turns this readout into decisions</p>
           </a>
           <a href="https://www.stratechi.com/team-value/" className="rounded-md border border-navy p-4 hover:bg-cream">
