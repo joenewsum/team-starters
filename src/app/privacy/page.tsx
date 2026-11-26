@@ -34,6 +34,11 @@ export default function Privacy() {
       <ul className="list-disc space-y-2 pl-5">
         <li>We store your email address so you can sign in, and the surveys, answers, and readouts in your account.</li>
         <li>Only you can see your surveys, answers, and readouts, unless you turn on a share link for a readout.</li>
+        <li>
+          We ask for your team&apos;s function, your role, your industry, and your company&apos;s size. We use these, along with
+          scores and answers from many surveys, to build anonymous benchmarks, like the average score for sales teams. Benchmarks
+          only show totals across many teams, never anything that identifies you, your company, or your team.
+        </li>
         <li>We email you to sign in and, if you choose, when there&apos;s news about Team Starters. You can stop the updates any time.</li>
       </ul>
 

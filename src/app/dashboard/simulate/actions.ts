@@ -35,6 +35,7 @@ export async function runSimulation(_prev: SimState, formData: FormData): Promis
       template_version: template.version,
       questions: template.questions,
       team_name: `Sim: ${label} (${scenarioKey.replaceAll("_", " ")})`,
+      meta: { simulated: true, team_type: teamType, scenario: scenarioKey },
     })
     .select("id, share_token")
     .single();

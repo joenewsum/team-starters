@@ -30,6 +30,11 @@ async function Account({ searchParams }: { searchParams: Promise<{ error?: strin
   return (
     <>
       <p className="mt-2 text-gray-700">Signed in as {user.email}</p>
+      <p className="mt-4">
+        <Link href="/dashboard/welcome?edit=1&next=/dashboard/account" className="font-semibold text-navy underline">
+          Update your role, team, and company details
+        </Link>
+      </p>
       <section className="mt-10 rounded-md border border-red-200 p-6">
         <h2 className="text-lg font-bold text-navy">Delete your account</h2>
         <p className="mt-2 text-sm text-gray-700">

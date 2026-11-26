@@ -33,7 +33,12 @@ async function DashboardContent() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: leader } = await supabase.from("leaders").select("wants_updates").eq("id", user.id).maybeSingle();
+  const { data: leader } = await supabase
+    .from("leaders")
+    .select("wants_updates, profile_completed_at")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (leader && !leader.profile_completed_at) redirect("/dashboard/welcome");
   const { data } = await supabase
     .from("surveys")
     .select("id, team_name, status, close_date, created_at, templates(name)")

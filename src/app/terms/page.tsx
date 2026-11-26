@@ -23,7 +23,8 @@ export default function Terms() {
       <h2 className="text-xl font-bold text-navy">Your content</h2>
       <p>
         The surveys you run and the answers your team gives belong to you and your team. You give us
-        permission to store and process them to run the service, including using AI to write readouts.
+        permission to store and process them to run the service, including using AI to write readouts, and to
+        use them in anonymous, aggregate benchmarks that never identify you, your company, or your team.
       </p>
       <h2 className="text-xl font-bold text-navy">AI readouts</h2>
       <p>

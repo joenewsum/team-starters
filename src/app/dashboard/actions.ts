@@ -55,6 +55,13 @@ export async function createSurvey(
   const template = getStarter(templateId);
   if (!template) return { ...keep, error: "That Team Starter isn't available." };
 
+  const { data: profile } = await supabase
+    .from("leaders")
+    .select("function, level, industry, company_size, profile_completed_at")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!profile?.profile_completed_at) redirect("/dashboard/welcome?next=/dashboard/new");
+
   const { data, error } = await supabase
     .from("surveys")
     .insert({
@@ -65,6 +72,12 @@ export async function createSurvey(
       team_name: teamName,
       close_date: closeDate || null,
       team_size: teamSize,
+      meta: {
+        function: profile.function,
+        level: profile.level,
+        industry: profile.industry,
+        company_size: profile.company_size,
+      },
     })
     .select("id")
     .single();
