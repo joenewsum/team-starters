@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { UpdatesToggle } from "./updates-toggle";
 
 export const metadata = { title: "Dashboard | Team Starters" };
 
@@ -32,6 +33,7 @@ async function DashboardContent() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: leader } = await supabase.from("leaders").select("wants_updates").eq("id", user.id).maybeSingle();
   const { data } = await supabase
     .from("surveys")
     .select("id, team_name, status, close_date, created_at, templates(name)")
@@ -49,13 +51,18 @@ async function DashboardContent() {
         </div>
         <div className="flex items-center gap-4">
           {isAdmin(user.email) && (
-            <Link
-              href="/dashboard/simulate"
-              className="text-sm font-semibold text-gold-dark underline"
-            >
-              Simulate a team
-            </Link>
+            <>
+              <Link href="/dashboard/admin" className="text-sm font-semibold text-gold-dark underline">
+                Admin
+              </Link>
+              <Link href="/dashboard/simulate" className="text-sm font-semibold text-gold-dark underline">
+                Simulate a team
+              </Link>
+            </>
           )}
+          <Link href="/dashboard/account" className="text-sm text-gray-600 underline hover:text-navy">
+            Account
+          </Link>
           <form action="/auth/signout" method="post">
             <button className="text-sm text-gray-600 underline hover:text-navy">
               Sign out
@@ -88,6 +95,10 @@ async function DashboardContent() {
           items={past}
           empty="Closed surveys and their readouts will show up here."
         />
+      </section>
+
+      <section className="mt-10">
+        <UpdatesToggle initial={Boolean(leader?.wants_updates)} />
       </section>
     </div>
   );

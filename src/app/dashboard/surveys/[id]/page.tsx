@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_RESPONSES_FOR_READOUT, shareLink } from "@/lib/site";
-import { closeSurvey, createReadout, reopenSurvey } from "../../actions";
+import { closeSurvey, createReadout, reopenSurvey, updateCloseDate } from "../../actions";
+import { CopyText } from "./copy-text";
 import { SubmitButton } from "./submit-button";
 import { DeleteButton } from "./delete-button";
 import { CopyLink } from "./copy-link";
@@ -99,6 +100,37 @@ async function SurveyDetail({
             Send it by email, Slack, or Teams. No one needs an account, and answers are anonymous.
           </p>
           <CopyLink url={url} />
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-semibold text-gold-dark">
+              Messages you can send
+            </summary>
+            <div className="mt-3 space-y-3">
+              <CopyText
+                label="Copy invite"
+                text={`I'd like your honest view on who we serve, the value we create, and where our time goes. It's a short survey, 10 to 15 minutes, and it's anonymous. I'll share what we learn as a team.${survey.close_date ? ` Please answer by ${survey.close_date}.` : ""}\n\n${url}`}
+              />
+              <CopyText
+                label="Copy reminder"
+                text={`Quick reminder: if you haven't yet, please take 10 to 15 minutes for our team survey.${survey.close_date ? ` It closes ${survey.close_date}.` : ""} It's anonymous, and every answer helps.\n\n${url}`}
+              />
+            </div>
+          </details>
+          <form action={updateCloseDate} className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+            <input type="hidden" name="id" value={survey.id} />
+            <label htmlFor="close_date" className="text-gray-600">
+              Close date
+            </label>
+            <input
+              id="close_date"
+              name="close_date"
+              type="date"
+              defaultValue={survey.close_date ?? ""}
+              className="rounded-md border border-gray-300 px-3 py-1.5"
+            />
+            <button className="rounded-md border border-navy px-3 py-1.5 font-semibold text-navy hover:bg-cream">
+              Save
+            </button>
+          </form>
         </section>
       )}
 

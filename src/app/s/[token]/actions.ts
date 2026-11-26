@@ -2,11 +2,20 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { validateAnswers, type Question } from "@/lib/templates";
+import { passesTurnstile } from "@/lib/turnstile";
+import { notifyIfReady } from "@/lib/notify";
 
 export type SubmitResult = { ok: boolean; error?: string };
 
-export async function submitResponse(token: string, rawAnswers: unknown): Promise<SubmitResult> {
+export async function submitResponse(
+  token: string,
+  rawAnswers: unknown,
+  botCheck?: string,
+): Promise<SubmitResult> {
   if (!/^[0-9a-f]{24}$/.test(token)) return { ok: false, error: "This link isn't valid." };
+  if (!(await passesTurnstile(botCheck))) {
+    return { ok: false, error: "Please finish the quick check above the button, then submit again." };
+  }
 
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_open_survey", { p_token: token });
@@ -24,6 +33,9 @@ export async function submitResponse(token: string, rawAnswers: unknown): Promis
     p_role: role,
     p_answers: result.answers,
   });
-  if (error || saved !== true) return { ok: false, error: "We couldn't save your answers. Try again." };
+  if (error || saved !== true) {
+    return { ok: false, error: "We couldn't save your answers. The survey may be closed or full." };
+  }
+  await notifyIfReady(token);
   return { ok: true };
 }

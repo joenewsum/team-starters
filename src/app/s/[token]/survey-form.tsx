@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import Script from "next/script";
 import type { Question } from "@/lib/templates";
 import Link from "next/link";
 import { submitResponse } from "./actions";
@@ -32,6 +33,18 @@ export function SurveyForm(props: Props) {
   });
   const [error, setError] = useState<string>();
   const [done, setDone] = useState(false);
+  const [answeredBefore, setAnsweredBefore] = useState(false);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+  const storeKey = props.mode === "leader" ? "" : `ts-answered-${props.token}`;
+
+  useEffect(() => {
+    if (!storeKey) return;
+    try {
+      // Reading device storage after mount; it isn't available during server rendering.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (localStorage.getItem(storeKey)) setAnsweredBefore(true);
+    } catch {}
+  }, [storeKey]);
   const [pending, start] = useTransition();
 
   const set = (id: string, val: Values[string]) =>
@@ -51,6 +64,24 @@ export function SurveyForm(props: Props) {
         >
           Back to the survey
         </Link>
+      </div>
+    );
+  }
+
+  if (answeredBefore && !done) {
+    return (
+      <div className="rounded-md border border-line p-8 text-center">
+        <p className="text-xl font-bold text-navy">You&apos;ve already answered on this device</p>
+        <p className="mt-2 text-gray-700">
+          Thanks for taking part. If someone else is using this device, they can answer too.
+        </p>
+        <button
+          type="button"
+          onClick={() => setAnsweredBefore(false)}
+          className="mt-6 rounded-md border border-navy px-5 py-2 font-semibold text-navy hover:bg-cream"
+        >
+          Answer as someone else
+        </button>
       </div>
     );
   }
@@ -78,12 +109,16 @@ export function SurveyForm(props: Props) {
       onSubmit={(e) => {
         e.preventDefault();
         setError(undefined);
+        const botCheck = String(new FormData(e.currentTarget).get("cf-turnstile-response") ?? "");
         start(async () => {
           const res =
             props.mode === "leader"
               ? await submitLeaderResponse(props.surveyId, values)
-              : await submitResponse(props.token, values);
+              : await submitResponse(props.token, values, botCheck);
           if (res.ok) {
+            try {
+              if (storeKey) localStorage.setItem(storeKey, "1");
+            } catch {}
             setDone(true);
             window.scrollTo({ top: 0 });
           } else setError(res.error);
@@ -216,6 +251,13 @@ export function SurveyForm(props: Props) {
           )}
         </fieldset>
       ))}
+
+      {props.mode !== "leader" && siteKey && (
+        <>
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+          <div className="cf-turnstile" data-sitekey={siteKey} />
+        </>
+      )}
 
       {error && <p className="text-red-700">{error}</p>}
 

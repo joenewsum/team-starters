@@ -29,6 +29,14 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto max-w-5xl px-6 py-12">{children}</main>
+        <footer className="border-t border-line print:hidden">
+          <div className="mx-auto flex max-w-5xl flex-wrap gap-4 px-6 py-6 text-sm text-gray-500">
+            <span>Team Starters by Stratechi</span>
+            <Link href="/privacy" className="hover:text-navy">Privacy</Link>
+            <Link href="/terms" className="hover:text-navy">Terms</Link>
+            <a href="https://www.stratechi.com/" className="hover:text-navy">stratechi.com</a>
+          </div>
+        </footer>
       </body>
     </html>
   );

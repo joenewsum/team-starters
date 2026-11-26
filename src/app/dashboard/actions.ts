@@ -166,3 +166,46 @@ function aiErrorCode(e: unknown): string {
   if (err?.status === 529 || (err?.status ?? 0) >= 500) return "ai_busy";
   return "ai";
 }
+
+export async function setReadoutSharing(surveyId: string, on: boolean) {
+  const supabase = await createClient();
+  const token = on
+    ? Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("")
+    : null;
+  await supabase.from("surveys").update({ readout_share_token: token }).eq("id", surveyId);
+  revalidatePath(`/dashboard/surveys/${surveyId}/readout`);
+}
+
+export async function updateCloseDate(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const closeDate = String(formData.get("close_date") ?? "").trim();
+  const today = new Date().toISOString().slice(0, 10);
+  const supabase = await createClient();
+  await supabase
+    .from("surveys")
+    .update({ close_date: closeDate && closeDate >= today ? closeDate : null })
+    .eq("id", id);
+  revalidatePath(`/dashboard/surveys/${id}`);
+  redirect(`/dashboard/surveys/${id}`);
+}
+
+export async function setWantsUpdates(on: boolean) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("leaders").update({ wants_updates: on }).eq("id", user.id);
+  revalidatePath("/dashboard");
+}
+
+export async function deleteAccount() {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) {
+    console.error("Delete account error", error);
+    redirect("/dashboard/account?error=1");
+  }
+  await supabase.auth.signOut();
+  redirect("/?deleted=1");
+}
