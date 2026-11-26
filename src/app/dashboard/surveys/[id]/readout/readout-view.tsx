@@ -1,6 +1,7 @@
 import type { Stats } from "@/lib/readout/stats";
 import type { Synthesis, Theme } from "@/lib/readout/synthesize";
 import { GOOD } from "@/lib/starters/value-starter-framework";
+import { REVIEW_URL, WORKSHOP_URL } from "@/lib/site";
 
 // The readout itself, shared by the leader's page and the team's shared link.
 export function ReadoutView({
@@ -9,12 +10,14 @@ export function ReadoutView({
   stats,
   synthesis: s,
   createdAt,
+  showReview = false,
 }: {
   teamName: string;
   template: string;
   stats: Stats;
   synthesis: Synthesis;
   createdAt: string;
+  showReview?: boolean;
 }) {
   const score = stats.scales?.[0];
   const fc = s.framework_check ?? {};
@@ -230,8 +233,20 @@ export function ReadoutView({
             <li key={q}>{q}</li>
           ))}
         </ol>
+        {showReview && (
+          <div className="mt-6 rounded-md bg-navy p-5 text-white print:hidden">
+            <p className="text-xs font-bold uppercase tracking-wider text-gold">Free 30-minute readout review</p>
+            <p className="mt-2 text-lg font-semibold">Walk through your readout with Joe</p>
+            <p className="mt-1 text-sm text-white/80">
+              We&apos;ll look at what stands out, what to share with your team, and how to run the workshop. No cost and no pitch.
+            </p>
+            <a href={REVIEW_URL} className="mt-4 inline-block rounded-md bg-gold px-5 py-2.5 font-bold text-navy hover:opacity-90">
+              Book your free review
+            </a>
+          </div>
+        )}
         <div className="mt-6 grid gap-3 sm:grid-cols-3 print:hidden">
-          <a href="https://www.stratechi.com/team-alignment-workshop/" className="rounded-md border-2 border-gold bg-cream p-4 hover:opacity-90">
+          <a href={WORKSHOP_URL} className="rounded-md border-2 border-gold bg-cream p-4 hover:opacity-90">
             <p className="font-semibold text-navy">Run a team alignment workshop</p>
             <p className="text-sm text-gray-600">The 1.5 to 3 hour workshop that turns this readout into decisions</p>
           </a>

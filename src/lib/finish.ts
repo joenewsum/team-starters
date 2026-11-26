@@ -1,5 +1,5 @@
 import { adminClient } from "@/lib/supabase/admin";
-import { siteUrl, MIN_RESPONSES_FOR_READOUT } from "@/lib/site";
+import { siteUrl, MIN_RESPONSES_FOR_READOUT, REVIEW_URL, WORKSHOP_URL } from "@/lib/site";
 import type { Question } from "@/lib/templates";
 import type { ResponseRow, Stats } from "@/lib/readout/stats";
 import type { Synthesis } from "@/lib/readout/synthesize";
@@ -158,9 +158,21 @@ ${
         .join("")}</ol>`
     : ""
 }
-<p style="margin:0 0 20px;">${btn(p.readoutLink, "Open your readout", true)}${btn(p.answersLink, "Read every answer", false)}</p>
-<p style="font-size:14px;margin:0 0 6px;">Next, bring it to your team. The team alignment workshop guide walks you through it: <a href="https://www.stratechi.com/team-alignment-workshop/" style="color:#8a6a2e;">stratechi.com/team-alignment-workshop</a>.</p>
-<p style="font-size:13px;color:#6b6b6b;margin:20px 0 0;">Your team's individual answers stay in your account, shuffled and without names.</p>
+<p style="margin:0 0 24px;">${btn(p.readoutLink, "Open your readout", true)}${btn(p.answersLink, "Read every answer", false)}</p>
+<div style="border:2px solid #c9a96e;background:#faf6ee;border-radius:8px;padding:18px 20px;margin:0 0 16px;">
+<p style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a6a2e;margin:0 0 6px;">Next: bring it to your team</p>
+<p style="font-size:17px;font-weight:700;color:#0f1f3d;margin:0 0 6px;">Run a team alignment workshop</p>
+<p style="font-size:14px;margin:0 0 14px;">A free guide to the 1.5 to 3 hour session that turns this readout into decisions: who you serve, your value statement, your scoreboard, and the first changes. It covers how to read the readout, what to share, the agenda, and scripts.</p>
+${btn(WORKSHOP_URL, "Open the workshop guide", true)}
+</div>
+<div style="background:#0f1f3d;border-radius:8px;padding:18px 20px;margin:0 0 16px;color:#ffffff;">
+<p style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#c9a96e;margin:0 0 6px;">Free 30-minute readout review</p>
+<p style="font-size:17px;font-weight:700;color:#ffffff;margin:0 0 6px;">Walk through it with me</p>
+<p style="font-size:14px;color:#dfe3ea;margin:0 0 14px;">We'll look at what stands out, what to share with your team, and how to run the workshop. No cost and no pitch.</p>
+<a href="${REVIEW_URL}" style="display:inline-block;padding:11px 20px;border-radius:6px;font-weight:700;text-decoration:none;background:#c9a96e;color:#0f1f3d;">Book your free review</a>
+</div>
+<p style="font-size:14px;margin:20px 0 0;">Joe Newsum<br><span style="color:#6b6b6b;">Founder, Stratechi</span></p>
+<p style="font-size:13px;color:#6b6b6b;margin:16px 0 0;">Your team's individual answers stay in your account, shuffled and without names.</p>
 </div>`;
   const text = `${p.template} readout: ${p.teamName}
 
@@ -171,6 +183,16 @@ ${score ? `The score: the team says ${score.teamAvg ?? "-"} out of 10${score.lea
 ${changes.length ? `Where the team wants to start:\n${changes.map((c, i) => `${i + 1}. ${c}`).join("\n")}\n\n` : ""}Open your readout: ${p.readoutLink}
 Read every answer: ${p.answersLink}
 
-The full readout is attached as a PDF.`;
+The full readout is attached as a PDF.
+
+NEXT: BRING IT TO YOUR TEAM
+Run a team alignment workshop. A free guide to the 1.5 to 3 hour session that turns this readout into decisions: ${WORKSHOP_URL}
+
+FREE 30-MINUTE READOUT REVIEW
+Walk through it with me. We'll look at what stands out, what to share with your team, and how to run the workshop. No cost and no pitch.
+Book it here: ${REVIEW_URL}
+
+Joe Newsum
+Founder, Stratechi`;
   return { html, text };
 }

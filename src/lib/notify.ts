@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { siteUrl } from "@/lib/site";
+import { siteUrl, WORKSHOP_URL } from "@/lib/site";
 import { supabaseUrl } from "@/lib/supabase/env";
 
 // Emails the leader once, when the third team member answers.
@@ -23,7 +23,7 @@ export async function notifyIfReady(shareToken: string) {
         from: process.env.EMAIL_FROM ?? "Team Starters <starters@stratechi.com>",
         to: [row.email],
         subject: `${row.team_name}: 3 people have answered`,
-        text: `Three people on ${row.team_name} have answered your survey.\n\nYour readout will be emailed to you when the survey closes: when everyone has answered, on the close date, or when you close it yourself. You can also see a readout of the answers so far.\n\nOpen your survey: ${link}\n\nJoe`,
+        text: `Three people on ${row.team_name} have answered your survey.\n\nYour readout will be emailed to you when the survey closes: when everyone has answered, on the close date, or when you close it yourself. You can also see a readout of the answers so far.\n\nOpen your survey: ${link}\n\nWhile you wait, book 1.5 to 3 hours with your team for the workshop. The guide shows how to run it: ${WORKSHOP_URL}\n\nJoe`,
       }),
     });
     if (!res.ok) console.error("Readout-ready email failed", res.status, await res.text());

@@ -60,6 +60,7 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
       )}
       <ShareReadout surveyId={id} shareUrl={shareUrl} />
       <ReadoutView
+        showReview
         teamName={survey.team_name}
         template={template}
         stats={readout.stats as Stats}

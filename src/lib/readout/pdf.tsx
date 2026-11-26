@@ -213,6 +213,9 @@ export function ReadoutPdf({
         <Text style={{ marginTop: 10, color: GOLD_DARK }}>
           Run a team alignment workshop: stratechi.com/team-alignment-workshop/
         </Text>
+        <Text style={{ marginTop: 4, color: GOLD_DARK }}>
+          Book a free 30-minute readout review with Joe: calendly.com/joe-stratechi
+        </Text>
 
         <View style={st.footer} fixed>
           <Text>Team Starters by Stratechi · app.stratechi.com · Answers are anonymous and grouped into themes.</Text>
