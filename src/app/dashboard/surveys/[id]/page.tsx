@@ -118,7 +118,7 @@ async function SurveyDetail({
             <div className="mt-3 space-y-3">
               <CopyText
                 label="Copy invite"
-                text={`I'd like your honest view on who we serve, the value we create, and where our time goes. It's a short survey, 10 to 15 minutes, and it's anonymous. I'll share what we learn as a team.${survey.close_date ? ` Please answer by ${survey.close_date}.` : ""}\n\n${url}`}
+                text={`I'd love your honest take on how our team works and where we can get better. It's a short survey, 10 to 15 minutes, and it's anonymous. There are no right answers, and I'll share what we learn with all of you.${survey.close_date ? ` Please answer by ${survey.close_date}.` : ""}\n\n${url}`}
               />
               <CopyText
                 label="Copy reminder"
