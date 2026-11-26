@@ -39,8 +39,10 @@ export async function submitResponse(
     return { ok: false, error: "We couldn't save your answers. The survey may be closed or full." };
   }
   after(async () => {
-    await notifyIfReady(token);
-    await finishIfEveryoneAnswered(token);
+    // If this answer completes the team, the readout email goes out and the
+    // "3 people have answered" note would be redundant, so skip it.
+    const finished = await finishIfEveryoneAnswered(token);
+    if (!finished) await notifyIfReady(token);
   });
   return { ok: true };
 }

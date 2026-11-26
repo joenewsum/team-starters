@@ -103,21 +103,24 @@ export async function finishSurvey(surveyId: string): Promise<void> {
 }
 
 // Called after each team answer: finish the survey once everyone is in.
-export async function finishIfEveryoneAnswered(shareToken: string): Promise<void> {
+// Returns true if this answer finished the survey.
+export async function finishIfEveryoneAnswered(shareToken: string): Promise<boolean> {
   const db = adminClient();
-  if (!db) return;
+  if (!db) return false;
   const { data: survey } = await db
     .from("surveys")
     .select("id, status, team_size")
     .eq("share_token", shareToken)
     .maybeSingle();
-  if (!survey || survey.status !== "open" || !survey.team_size) return;
+  if (!survey || survey.status !== "open" || !survey.team_size) return false;
   const { count } = await db
     .from("responses")
     .select("id", { count: "exact", head: true })
     .eq("survey_id", survey.id)
     .eq("role", "team");
-  if ((count ?? 0) >= survey.team_size) await finishSurvey(survey.id);
+  if ((count ?? 0) < survey.team_size) return false;
+  await finishSurvey(survey.id);
+  return true;
 }
 
 export function readoutEmail(p: {
