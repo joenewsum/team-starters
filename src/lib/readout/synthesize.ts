@@ -92,7 +92,7 @@ const readoutTool = {
       },
       work_map: {
         type: "array",
-        description: "One entry per bucket (High value, Medium value, Low value, No value) with the work people put there, as themes.",
+        description: "One entry per bucket in the survey (for example High value, Some value, No value) with the work people put there, as themes.",
         items: {
           type: "object",
           properties: { bucket: { type: "string" }, themes: themeSchema },
@@ -144,7 +144,7 @@ const readoutTool = {
   },
 };
 
-const SYSTEM = `You write readouts for Team Starters, free team surveys from Stratechi. A leader ran the Value Starter with their team: who the team's customers are (most important first), the value it creates, a 1 to 10 score for that value, what would get it to a 10, the measures that matter and why, how people sort their week into high, medium, low, and no value work, and the split of the week. You turn the answers into a readout the leader will read and share with the team.
+const SYSTEM = `You write readouts for Team Starters, free team surveys from Stratechi. A leader ran the Value Starter with their team: who the team's customers are (most important first), the value it creates, a 1 to 10 score for that value, what would get it to a 10, the measures that matter and why, how people sort their week into high, some, and no value work, and the split of the week. You turn the answers into a readout the leader will read and share with the team.
 
 The readout also teaches. Judge the team's answers against the Exceptional Leadership framework below, so the leader and the team learn what good looks like and what they're aiming for. Weave the framework's ideas and language into the readout where they help: why a clear scoreboard matters for a team to know if it's winning, what value moments are, the value lens, cleaning the house, the change agenda. Keep it practical and specific to this team. Never lecture or pad.
 

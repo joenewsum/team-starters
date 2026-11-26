@@ -14,7 +14,7 @@ export type Starter = {
 export const VALUE_STARTER: Starter = {
   id: "value-starter",
   name: "Value Starter",
-  version: 5,
+  version: 6,
   description:
     "Who your customers are, the value you create, and where the week goes.",
   minutes: 15,
@@ -65,49 +65,23 @@ export const VALUE_STARTER: Starter = {
     {
       id: "work_buckets",
       type: "buckets",
-      text: "Think about your typical week. What work would you put in each bucket?",
-      hint: "A few words each is fine. List as many as come to mind.",
+      text: "Think about your typical week. Give some examples of work in each bucket.",
+      hint: "A few words each is fine.",
       parts: [
-        {
-          id: "high",
-          label: "High value",
-        },
-        {
-          id: "medium",
-          label: "Medium value",
-        },
-        {
-          id: "low",
-          label: "Low value",
-        },
-        {
-          id: "none",
-          label: "No value",
-        },
+        { id: "high", label: "High value" },
+        { id: "some", label: "Some value" },
+        { id: "none", label: "No value" },
       ],
       required: true,
     },
     {
       id: "value_mix",
       type: "mix",
-      text: "Now split your typical week across those buckets. They add up to 100%.",
+      text: "Roughly what share of your week goes to each? They add up to 100%.",
       parts: [
-        {
-          id: "high",
-          label: "High value",
-        },
-        {
-          id: "medium",
-          label: "Medium value",
-        },
-        {
-          id: "low",
-          label: "Low value",
-        },
-        {
-          id: "none",
-          label: "No value",
-        },
+        { id: "high", label: "High value" },
+        { id: "some", label: "Some value" },
+        { id: "none", label: "No value" },
       ],
       required: true,
     },

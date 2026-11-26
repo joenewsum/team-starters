@@ -12,7 +12,7 @@ export const GOOD = {
   scoreboard:
     "A clear scoreboard lets the team see whether it's winning. One number at the top tied to the value, a few drivers underneath that the team's best work moves, reviewed every week, and everyone knows them. The numbers show the outcomes customers get.",
   week:
-    "As much of the week as possible goes to high-value work: the few value moments where the team creates value. In many teams it's only 10 to 15% to start. Low-value work gets reshaped: shorter, fewer people, less often, or automated. No-value work gets cut.",
+    "As much of the week as possible goes to high-value work: the few value moments where the team creates value. In many teams it's only 10 to 15% to start. Some-value work gets reshaped: shorter, fewer people, less often, or automated. No-value work gets cut.",
   changes:
     "Everyone adds to a living change agenda, ranked by value for the effort. It starts with quick wins the team can make itself, like cleaning up meetings, reports, and approvals, and builds toward bigger changes.",
 } as const;
@@ -36,6 +36,7 @@ Measuring the value is essential. A clear scoreboard lets the team see whether i
 
 ### The work and the value mix
 All work is not created equal. Every task falls into one of four kinds: high-value work (the value moments, where value is actually created), low-value work (needed, but worth less than the time it takes), no-value work (adds nothing: extra emails, status meetings, reports nobody reads), and rework (doing it again because it wasn't right the first time). The value mix, how much time goes to each, is the most important picture a leader can have of the work. In many teams only 10 to 15% of the time goes to high-value work.
+The Value Starter asks people to sort their own week into three buckets that match the value lens: high value (creates value for customers: keep it and do more), some value (helps, but is worth less than the time it takes: reshape it), and no value (adds nothing, including rework: cut it). Older surveys used four buckets (high, medium, low, no).
 The value lens: run everything through the true north and ask whether it creates value or helps create it. Yes: keep it and make it better, faster, or more frequent. Partly: reshape it (shorter, fewer people, less often, partly automated). No: cut it, and if it must stay, do the minimum. When people sort the same work into different buckets, that's a conversation worth having.
 
 ### Changes
