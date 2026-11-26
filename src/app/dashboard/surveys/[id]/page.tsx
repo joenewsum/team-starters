@@ -97,16 +97,36 @@ async function SurveyDetail({
           <h2 className="text-lg font-bold text-navy">Share this link with your team</h2>
           <p className="mt-1 mb-3 text-sm text-gray-600">
             Send it by email, Slack, or Teams. No one needs an account, and answers are anonymous.
-            Take it yourself too and choose &quot;Leader&quot; on the first question.
           </p>
           <CopyLink url={url} />
         </section>
       )}
 
+      <section className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-md border border-line p-5">
+        <div>
+          <h2 className="text-lg font-bold text-navy">Your answers</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            {leaderCount
+              ? "Done. The readout shows your view next to the team's."
+              : "Answer the same questions yourself. The readout compares your view with the team's."}
+          </p>
+        </div>
+        {open && (
+          <Link
+            href={`/dashboard/surveys/${survey.id}/take`}
+            className={`rounded-md px-5 py-2 font-semibold ${
+              leaderCount ? "border border-navy text-navy hover:bg-cream" : "bg-navy text-white hover:bg-navy-2"
+            }`}
+          >
+            {leaderCount ? "Update my answers" : "Take it yourself"}
+          </Link>
+        )}
+      </section>
+
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Stat label="Responses" value={responses} />
-        <Stat label="Team members" value={teamResponses} />
-        <Stat label="Leader" value={leaderCount ? "Done" : "Not yet"} />
+        <Stat label="Team responses" value={teamResponses} />
+        <Stat label="Your answers" value={leaderCount ? "Done" : "Not yet"} />
+        <Stat label="Total" value={responses} />
       </section>
 
       <section className="mt-8 rounded-md border border-line p-6">
@@ -116,10 +136,11 @@ async function SurveyDetail({
             {ERRORS[error] ?? "Something went wrong. Try again."}
           </p>
         )}
-        {responses < MIN_RESPONSES_FOR_READOUT ? (
+        {teamResponses < MIN_RESPONSES_FOR_READOUT ? (
           <p className="mt-2 text-gray-600">
-            The readout needs at least {MIN_RESPONSES_FOR_READOUT} responses so no one can be
-            identified. {MIN_RESPONSES_FOR_READOUT - responses} more to go.
+            The readout and the answers open once at least {MIN_RESPONSES_FOR_READOUT} team members
+            have answered, so no one can be identified.{" "}
+            {MIN_RESPONSES_FOR_READOUT - teamResponses} more to go.
           </p>
         ) : (
           <div className="mt-2 space-y-3">
@@ -145,7 +166,13 @@ async function SurveyDetail({
                   View readout
                 </Link>
               )}
-              {(!latest || latest.response_count < responses) && (
+              <Link
+                href={`/dashboard/surveys/${survey.id}/answers`}
+                className="rounded-md border border-navy px-5 py-2 font-semibold text-navy hover:bg-cream"
+              >
+                See all answers
+              </Link>
+              {(!latest || latest.response_count !== responses || leaderCount) && (
                 <form action={createReadout}>
                   <input type="hidden" name="id" value={survey.id} />
                   <SubmitButton

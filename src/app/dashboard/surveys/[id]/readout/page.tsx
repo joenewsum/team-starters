@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Stats } from "@/lib/readout/stats";
 import type { Synthesis, Theme } from "@/lib/readout/synthesize";
 import { PrintButton } from "./print-button";
+import { GOOD } from "@/lib/starters/value-starter-framework";
 
 export const metadata = { title: "Readout | Team Starters" };
 
@@ -35,6 +36,7 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
   const s = readout.synthesis as Synthesis;
   const stats = readout.stats as Stats;
   const score = stats.scales?.[0];
+  const fc = s.framework_check ?? {};
   const template = (survey.templates as unknown as { name: string } | null)?.name ?? "Team Starter";
 
   return (
@@ -92,6 +94,8 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
                   {a.gap}
                 </p>
               )}
+              {a.topic === "Customers" && <FrameworkNote good={GOOD.customers} compare={fc.customers} />}
+              {a.topic === "Value" && <FrameworkNote good={GOOD.value} compare={fc.value} />}
             </div>
           ))}
         </div>
@@ -109,6 +113,7 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
             />
           </div>
           {s.score_read && <p className="mt-4 text-gray-700">{s.score_read}</p>}
+          <FrameworkNote good={GOOD.score} compare={fc.score} />
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
             <div className="break-inside-avoid">
               <h3 className="font-bold text-navy">Why that score</h3>
@@ -142,7 +147,8 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
       </Section>
 
       <Section title="A draft scoreboard">
-        <ul className="space-y-3">
+        <FrameworkNote good={GOOD.scoreboard} compare={fc.scoreboard} first />
+        <ul className="mt-4 space-y-3">
           {s.scoreboard.map((m) => (
             <li key={m.metric} className="rounded-md border border-line p-4 break-inside-avoid">
               <p className="font-semibold text-navy">{m.metric}</p>
@@ -172,6 +178,7 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
           </div>
         ))}
         <p className="mt-4 text-gray-700">{s.mix_read}</p>
+        <FrameworkNote good={GOOD.week} compare={fc.week} />
 
         {s.work_map && s.work_map.length > 0 && (
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -209,6 +216,7 @@ async function Readout({ params }: { params: Promise<{ id: string }> }) {
       {s.one_change && s.one_change.length > 0 && (
         <Section title="Where the team wants to start">
           <Themes items={s.one_change} total={stats.teamCount} />
+          <FrameworkNote good={GOOD.changes} compare={fc.changes} />
         </Section>
       )}
 
@@ -275,6 +283,25 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="mb-4 text-2xl font-bold text-navy">{title}</h2>
       {children}
     </section>
+  );
+}
+
+function FrameworkNote({ good, compare, first }: { good: string; compare?: string; first?: boolean }) {
+  return (
+    <div className={`${first ? "" : "mt-4"} rounded-md border-l-4 border-gold bg-cream p-4 text-sm break-inside-avoid`}>
+      <p className="font-semibold uppercase tracking-wide text-gold-dark" style={{ fontSize: "0.7rem" }}>
+        What good looks like
+      </p>
+      <p className="mt-1 text-gray-800">{good}</p>
+      {compare && (
+        <>
+          <p className="mt-3 font-semibold uppercase tracking-wide text-navy" style={{ fontSize: "0.7rem" }}>
+            How you compare
+          </p>
+          <p className="mt-1 text-gray-800">{compare}</p>
+        </>
+      )}
+    </div>
   );
 }
 

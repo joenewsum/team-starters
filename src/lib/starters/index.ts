@@ -14,18 +14,11 @@ export type Starter = {
 export const VALUE_STARTER: Starter = {
   id: "value-starter",
   name: "Value Starter",
-  version: 4,
+  version: 5,
   description:
     "Who your customers are, the value you create, and where the week goes.",
   minutes: 15,
   questions: [
-    {
-      id: "role",
-      type: "choice",
-      text: "Are you the team's leader or a team member?",
-      options: ["Leader", "Team member"],
-      required: true,
-    },
     {
       id: "customers",
       type: "text",

@@ -40,7 +40,7 @@ function schemaFor(q: Question): object {
   return { type: "object", properties: props, required: q.parts.map((p) => p.id) };
 }
 
-export type SimRespondent = { persona: string; answers: Record<string, unknown> };
+export type SimRespondent = { persona: string; is_leader: boolean; answers: Record<string, unknown> };
 
 export async function simulateTeam(input: {
   questions: Question[];
@@ -67,13 +67,14 @@ export async function simulateTeam(input: {
             type: "object",
             properties: {
               persona: { type: "string", description: "Short description of this person, for testing only." },
+              is_leader: { type: "boolean", description: "True for the team's leader only." },
               answers: {
                 type: "object",
                 properties: answerProps,
                 required: input.questions.filter((q) => q.required).map((q) => q.id),
               },
             },
-            required: ["persona", "answers"],
+            required: ["persona", "is_leader", "answers"],
           },
         },
       },
@@ -90,7 +91,7 @@ Number of people answering: ${input.size}
 ${PEOPLE}
 
 Rules:
-- Answer the "role" question with "Leader" for the leader and "Team member" for everyone else.
+- Set is_leader to true for exactly one person, the team's leader.
 - Write answers in each person's own voice, like a real employee typing quickly.
 - For any question that splits the week, each person's numbers must add up to exactly 100.
 - Optional questions can be left blank by some people.

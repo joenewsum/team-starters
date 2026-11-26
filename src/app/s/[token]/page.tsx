@@ -44,9 +44,10 @@ async function Survey({ params }: { params: Promise<{ token: string }> }) {
       </p>
       <h1 className="mt-2 text-3xl font-bold text-navy">{survey.team_name}</h1>
       <p className="mt-3 mb-8 text-gray-700">
-        Your leader wants the team&apos;s honest view of who depends on us, the value we create, and
-        where our time goes. It takes 10 to 15 minutes. Answers are anonymous, and the readout only shows
-        once at least 3 people have answered. Write in your own words. There are no right answers.
+        This short survey asks for your honest view of who we serve, the value we create, and where
+        our time goes. It takes 10 to 15 minutes. Your answers are anonymous: responses are shuffled
+        and shared without names, so no one can tell who said what. Write in your own words. There
+        are no right answers.
       </p>
       <SurveyForm token={token} questions={survey.questions as Question[]} />
     </>

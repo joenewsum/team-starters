@@ -16,7 +16,9 @@ export async function submitResponse(token: string, rawAnswers: unknown): Promis
   const result = validateAnswers(survey.questions as Question[], rawAnswers);
   if (!result.ok) return { ok: false, error: result.error };
 
-  const role = result.answers.role === "Leader" ? "leader" : "team";
+  // Everyone with the share link answers as a team member. The leader answers
+  // from their dashboard. (Older surveys asked for the role; treat them as team.)
+  const role = "team";
   const { data: saved, error } = await supabase.rpc("submit_response", {
     p_token: token,
     p_role: role,

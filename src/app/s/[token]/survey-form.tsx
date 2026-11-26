@@ -2,14 +2,28 @@
 
 import { useState, useTransition } from "react";
 import type { Question } from "@/lib/templates";
+import Link from "next/link";
 import { submitResponse } from "./actions";
+import { submitLeaderResponse } from "@/app/dashboard/surveys/[id]/take/actions";
 
 type Values = Record<string, string | number | string[] | Record<string, number> | Record<string, string>>;
 
-export function SurveyForm({ token, questions }: { token: string; questions: Question[] }) {
+type Props =
+  | { mode?: "team"; token: string; questions: Question[]; initial?: Values; surveyId?: never }
+  | { mode: "leader"; surveyId: string; questions: Question[]; initial?: Values; token?: never };
+
+export function SurveyForm(props: Props) {
+  const { questions } = props;
   const [values, setValues] = useState<Values>(() => {
-    const v: Values = {};
+    const v: Values = { ...(props.initial ?? {}) };
     for (const q of questions) {
+      if (v[q.id] !== undefined) {
+        if (q.type === "list") {
+          const have = (v[q.id] as string[]) ?? [];
+          v[q.id] = Array.from({ length: q.count }, (_, k) => have[k] ?? "");
+        }
+        continue;
+      }
       if (q.type === "mix") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, 0]));
       if (q.type === "buckets") v[q.id] = Object.fromEntries(q.parts.map((p) => [p.id, ""]));
       if (q.type === "list") v[q.id] = Array.from({ length: q.count }, () => "");
@@ -23,12 +37,30 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
   const set = (id: string, val: Values[string]) =>
     setValues((prev) => ({ ...prev, [id]: val }));
 
+  if (done && props.mode === "leader") {
+    return (
+      <div className="rounded-md border border-gold bg-cream p-8 text-center">
+        <p className="text-2xl font-bold text-navy">Your answers are in</p>
+        <p className="mt-2 text-gray-700">
+          The readout will show your view next to the team&apos;s. You can update your answers
+          any time while the survey is open.
+        </p>
+        <Link
+          href={`/dashboard/surveys/${props.surveyId}`}
+          className="mt-6 inline-block rounded-md bg-navy px-5 py-2 font-semibold text-white hover:bg-navy-2"
+        >
+          Back to the survey
+        </Link>
+      </div>
+    );
+  }
+
   if (done) {
     return (
       <div className="rounded-md border border-gold bg-cream p-8 text-center">
         <p className="text-2xl font-bold text-navy">Thank you</p>
         <p className="mt-2 text-gray-700">
-          Your answers are in. Your leader will share what the team said.
+          Your answers are in, along with the rest of the team&apos;s.
         </p>
         <a
           href="https://www.stratechi.com/exceptional-leadership/"
@@ -47,7 +79,10 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
         e.preventDefault();
         setError(undefined);
         start(async () => {
-          const res = await submitResponse(token, values);
+          const res =
+            props.mode === "leader"
+              ? await submitLeaderResponse(props.surveyId, values)
+              : await submitResponse(props.token, values);
           if (res.ok) {
             setDone(true);
             window.scrollTo({ top: 0 });
@@ -189,10 +224,12 @@ export function SurveyForm({ token, questions }: { token: string; questions: Que
         disabled={pending}
         className="w-full rounded-md bg-navy px-6 py-4 text-lg font-semibold text-white hover:bg-navy-2 disabled:opacity-60"
       >
-        {pending ? "Sending..." : "Submit my answers"}
+        {pending ? "Sending..." : props.mode === "leader" ? "Save my answers" : "Submit my answers"}
       </button>
       <p className="text-center text-xs text-gray-500">
-        Anonymous. We don&apos;t store your name, email, or IP address with your answers.
+        {props.mode === "leader"
+          ? "Your answers show as the leader's view in the readout."
+          : "Anonymous. We don't store your name, email, or IP address with your answers."}
       </p>
     </form>
   );

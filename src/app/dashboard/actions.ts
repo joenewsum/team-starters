@@ -115,7 +115,9 @@ export async function createReadout(formData: FormData) {
 
   const { data: rows } = await supabase.from("responses").select("role, answers").eq("survey_id", id);
   const responses = (rows ?? []) as ResponseRow[];
-  if (responses.length < MIN_RESPONSES_FOR_READOUT) redirect(`/dashboard/surveys/${id}`);
+  if (responses.filter((r) => r.role === "team").length < MIN_RESPONSES_FOR_READOUT) {
+    redirect(`/dashboard/surveys/${id}`);
+  }
 
   const since = new Date(Date.now() - 86400000).toISOString();
   const { count } = await supabase

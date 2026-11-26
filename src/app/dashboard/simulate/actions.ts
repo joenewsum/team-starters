@@ -51,10 +51,12 @@ export async function runSimulation(_prev: SimState, formData: FormData): Promis
   }
 
   let saved = 0;
+  let leaderDone = false;
   for (const r of respondents) {
     const v = validateAnswers(questions, r.answers);
     if (!v.ok) continue;
-    const role = v.answers.role === "Leader" ? "leader" : "team";
+    const role = r.is_leader && !leaderDone ? "leader" : "team";
+    if (role === "leader") leaderDone = true;
     const { data } = await supabase.rpc("submit_response", {
       p_token: survey.share_token,
       p_role: role,
