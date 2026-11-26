@@ -231,9 +231,9 @@ export function ReadoutView({
           ))}
         </ol>
         <div className="mt-6 grid gap-3 sm:grid-cols-3 print:hidden">
-          <a href="https://www.stratechi.com/agree-on-our-value/" className="rounded-md border-2 border-gold bg-cream p-4 hover:opacity-90">
-            <p className="font-semibold text-navy">Agree on your value with your team</p>
-            <p className="text-sm text-gray-600">The team session that turns this readout into decisions</p>
+          <a href="https://www.stratechi.com/team-alignment-workshop/" className="rounded-md border-2 border-gold bg-cream p-4 hover:opacity-90">
+            <p className="font-semibold text-navy">Run a team alignment workshop</p>
+            <p className="text-sm text-gray-600">The 1.5 to 3 hour workshop that turns this readout into decisions</p>
           </a>
           <a href="https://www.stratechi.com/team-value/" className="rounded-md border border-navy p-4 hover:bg-cream">
             <p className="font-semibold text-navy">Define the value your team creates</p>
