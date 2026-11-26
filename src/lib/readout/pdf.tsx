@@ -214,7 +214,7 @@ export function ReadoutPdf({
           Run a team alignment workshop: stratechi.com/team-alignment-workshop/
         </Text>
         <Text style={{ marginTop: 4, color: GOLD_DARK }}>
-          Book a free 30-minute readout review with Joe: calendly.com/joe-stratechi
+          Book a free 30-minute readout review with Joe: calendly.com/joe-stratechi/team-alignment-readout
         </Text>
 
         <View style={st.footer} fixed>
