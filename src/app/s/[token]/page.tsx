@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { Question } from "@/lib/templates";
 import { SurveyForm } from "./survey-form";
 
+// Room to write and email the readout after the last answer comes in.
+export const maxDuration = 300;
+
 export const metadata = {
   title: "Team survey | Team Starters",
   robots: { index: false, follow: false },

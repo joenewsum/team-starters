@@ -10,14 +10,14 @@ import { DeleteButton } from "./delete-button";
 import { CopyLink } from "./copy-link";
 
 export const metadata = { title: "Survey | Team Starters" };
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export default function SurveyPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ new?: string; error?: string; sim?: string }>;
+  searchParams: Promise<{ new?: string; error?: string; sim?: string; closed?: string }>;
 }) {
   return (
     <div>
@@ -36,16 +36,16 @@ async function SurveyDetail({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ new?: string; error?: string; sim?: string }>;
+  searchParams: Promise<{ new?: string; error?: string; sim?: string; closed?: string }>;
 }) {
   const { id } = await params;
-  const { new: isNew, error, sim } = await searchParams;
+  const { new: isNew, error, sim, closed: justClosed } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
   const { data: survey } = await supabase
     .from("surveys")
-    .select("id, team_name, status, close_date, share_token, created_at, closed_at, templates(name)")
+    .select("id, team_name, status, close_date, team_size, readout_sent_at, share_token, created_at, closed_at, templates(name)")
     .eq("id", id)
     .single();
   if (!survey) notFound();
@@ -73,6 +73,12 @@ async function SurveyDetail({
 
   return (
     <div className="mt-4">
+      {justClosed && (
+        <div className="mb-6 rounded-md border border-gold bg-cream p-4 text-navy">
+          The survey is closed. Your readout is being written and will be in your inbox in a minute or
+          two, with the PDF attached.
+        </div>
+      )}
       {sim && (
         <div className="mb-6 rounded-md border border-gold bg-cream p-4 text-navy">
           Simulation done: {sim} answers added. Create the readout below to see how it reads.
@@ -98,6 +104,11 @@ async function SurveyDetail({
           <h2 className="text-lg font-bold text-navy">Share this link with your team</h2>
           <p className="mt-1 mb-3 text-sm text-gray-600">
             Send it by email, Slack, or Teams. No one needs an account, and answers are anonymous.
+            {survey.team_size
+              ? ` When all ${survey.team_size} have answered${survey.close_date ? `, or on ${survey.close_date}` : ""}, the survey closes and your readout is emailed to you.`
+              : survey.close_date
+                ? ` On ${survey.close_date}, the survey closes and your readout is emailed to you.`
+                : ""}
           </p>
           <CopyLink url={url} />
           <details className="mt-4">
@@ -117,6 +128,18 @@ async function SurveyDetail({
           </details>
           <form action={updateCloseDate} className="mt-4 flex flex-wrap items-center gap-2 text-sm">
             <input type="hidden" name="id" value={survey.id} />
+            <label htmlFor="team_size" className="text-gray-600">
+              Team size
+            </label>
+            <input
+              id="team_size"
+              name="team_size"
+              type="number"
+              min={3}
+              max={500}
+              defaultValue={survey.team_size ?? ""}
+              className="w-20 rounded-md border border-gray-300 px-3 py-1.5"
+            />
             <label htmlFor="close_date" className="text-gray-600">
               Close date
             </label>
@@ -156,7 +179,10 @@ async function SurveyDetail({
       </section>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Stat label="Team responses" value={teamResponses} />
+        <Stat
+          label="Team responses"
+          value={survey.team_size ? `${teamResponses} of ${survey.team_size}` : teamResponses}
+        />
         <Stat label="Your answers" value={leaderCount ? "Done" : "Not yet"} />
         <Stat label="Total" value={responses} />
       </section>
@@ -185,7 +211,7 @@ async function SurveyDetail({
             ) : (
               <p className="text-gray-600">
                 {open
-                  ? "You can create the readout now, or wait until everyone has answered. Close the survey when you're done."
+                  ? "Your readout will be emailed to you when the survey closes. You can look at a readout of the answers so far at any time."
                   : "Everyone's in. Create the readout to see what your team said."}
               </p>
             )}
@@ -208,7 +234,7 @@ async function SurveyDetail({
                 <form action={createReadout}>
                   <input type="hidden" name="id" value={survey.id} />
                   <SubmitButton
-                    label={latest ? "Create a new readout" : "Create readout"}
+                    label={open ? "See the readout so far" : latest ? "Create a new readout" : "Create readout"}
                     pendingLabel="Writing your readout... (about a minute)"
                   />
                 </form>

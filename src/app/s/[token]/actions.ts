@@ -3,7 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { validateAnswers, type Question } from "@/lib/templates";
 import { passesTurnstile } from "@/lib/turnstile";
+import { after } from "next/server";
 import { notifyIfReady } from "@/lib/notify";
+import { finishIfEveryoneAnswered } from "@/lib/finish";
 
 export type SubmitResult = { ok: boolean; error?: string };
 
@@ -36,6 +38,9 @@ export async function submitResponse(
   if (error || saved !== true) {
     return { ok: false, error: "We couldn't save your answers. The survey may be closed or full." };
   }
-  await notifyIfReady(token);
+  after(async () => {
+    await notifyIfReady(token);
+    await finishIfEveryoneAnswered(token);
+  });
   return { ok: true };
 }

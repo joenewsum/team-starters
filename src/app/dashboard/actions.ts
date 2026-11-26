@@ -1,15 +1,18 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { finishSurvey } from "@/lib/finish";
+import { adminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { MIN_RESPONSES_FOR_READOUT } from "@/lib/site";
 import type { Question } from "@/lib/templates";
 import { getStarter } from "@/lib/starters";
-import { computeStats, textAnswers, type ResponseRow } from "@/lib/readout/stats";
-import { synthesize, type Synthesis } from "@/lib/readout/synthesize";
+import type { ResponseRow } from "@/lib/readout/stats";
+import { generateReadout } from "@/lib/readout/generate";
 
-export type NewSurveyState = { error?: string; teamName?: string; closeDate?: string };
+export type NewSurveyState = { error?: string; teamName?: string; closeDate?: string; teamSize?: string };
 
 const MAX_OPEN_SURVEYS = 10;
 
@@ -20,7 +23,12 @@ export async function createSurvey(
   const teamName = String(formData.get("team_name") ?? "").trim();
   const closeDate = String(formData.get("close_date") ?? "").trim();
   const templateId = String(formData.get("template_id") ?? "value-starter");
-  const keep = { teamName, closeDate };
+  const teamSizeRaw = String(formData.get("team_size") ?? "").trim();
+  const keep = { teamName, closeDate, teamSize: teamSizeRaw };
+  const teamSize = teamSizeRaw ? Number(teamSizeRaw) : null;
+  if (teamSize !== null && (!Number.isInteger(teamSize) || teamSize < 3 || teamSize > 500)) {
+    return { ...keep, error: "Team size should be a number from 3 to 500, not counting you." };
+  }
 
   if (!teamName) return { ...keep, error: "Give your team a name." };
   if (teamName.length > 120) return { ...keep, error: "Keep the team name under 120 characters." };
@@ -56,6 +64,7 @@ export async function createSurvey(
       questions: template.questions,
       team_name: teamName,
       close_date: closeDate || null,
+      team_size: teamSize,
     })
     .select("id")
     .single();
@@ -69,11 +78,17 @@ export async function createSurvey(
 export async function closeSurvey(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const supabase = await createClient();
-  await supabase
+  const { data: closed } = await supabase
     .from("surveys")
     .update({ status: "closed", closed_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   revalidatePath("/dashboard");
+  if (closed && adminClient()) {
+    after(() => finishSurvey(id));
+    redirect(`/dashboard/surveys/${id}?closed=1`);
+  }
   redirect(`/dashboard/surveys/${id}`);
 }
 
@@ -82,7 +97,7 @@ export async function reopenSurvey(formData: FormData) {
   const supabase = await createClient();
   await supabase
     .from("surveys")
-    .update({ status: "open", closed_at: null, close_date: null })
+    .update({ status: "open", closed_at: null, close_date: null, readout_sent_at: null, notified_at: null })
     .eq("id", id);
   revalidatePath("/dashboard");
   redirect(`/dashboard/surveys/${id}`);
@@ -129,27 +144,15 @@ export async function createReadout(formData: FormData) {
   const questions = (survey.questions ??
     (survey.templates as unknown as { questions: Question[] } | null)?.questions ??
     []) as Question[];
-  const stats = computeStats(questions, responses);
 
-  let synthesis: Synthesis;
+  let failed: string | null = null;
   try {
-    synthesis = await synthesize({
-      teamName: survey.team_name,
-      stats,
-      texts: textAnswers(questions, responses),
-    });
+    await generateReadout(supabase, { id, team_name: survey.team_name, questions }, responses);
   } catch (e) {
     console.error("Readout AI error", e);
-    redirect(`/dashboard/surveys/${id}?error=${aiErrorCode(e)}`);
+    failed = e instanceof Error && e.message === "SAVE_FAILED" ? "save" : aiErrorCode(e);
   }
-
-  const { error } = await supabase.from("readouts").insert({
-    survey_id: id,
-    response_count: responses.length,
-    stats,
-    synthesis,
-  });
-  if (error) redirect(`/dashboard/surveys/${id}?error=save`);
+  if (failed) redirect(`/dashboard/surveys/${id}?error=${failed}`);
 
   revalidatePath(`/dashboard/surveys/${id}`);
   redirect(`/dashboard/surveys/${id}/readout`);
@@ -179,11 +182,16 @@ export async function setReadoutSharing(surveyId: string, on: boolean) {
 export async function updateCloseDate(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const closeDate = String(formData.get("close_date") ?? "").trim();
+  const sizeRaw = String(formData.get("team_size") ?? "").trim();
+  const size = sizeRaw ? Number(sizeRaw) : null;
   const today = new Date().toISOString().slice(0, 10);
   const supabase = await createClient();
   await supabase
     .from("surveys")
-    .update({ close_date: closeDate && closeDate >= today ? closeDate : null })
+    .update({
+      close_date: closeDate && closeDate >= today ? closeDate : null,
+      team_size: size !== null && Number.isInteger(size) && size >= 3 && size <= 500 ? size : null,
+    })
     .eq("id", id);
   revalidatePath(`/dashboard/surveys/${id}`);
   redirect(`/dashboard/surveys/${id}`);

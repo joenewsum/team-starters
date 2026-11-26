@@ -22,8 +22,8 @@ export async function notifyIfReady(shareToken: string) {
       body: JSON.stringify({
         from: process.env.EMAIL_FROM ?? "Team Starters <starters@stratechi.com>",
         to: [row.email],
-        subject: `Your ${row.team_name} readout is ready`,
-        text: `Three people on ${row.team_name} have answered, so your readout is ready to create.\n\nOpen your survey: ${link}\n\nYou can create it now, or wait for more answers and create it then.\n\nTeam Starters by Stratechi`,
+        subject: `${row.team_name}: 3 people have answered`,
+        text: `Three people on ${row.team_name} have answered your survey.\n\nYour readout will be emailed to you when the survey closes: when everyone has answered, on the close date, or when you close it yourself. You can also see a readout of the answers so far.\n\nOpen your survey: ${link}\n\nJoe`,
       }),
     });
     if (!res.ok) console.error("Readout-ready email failed", res.status, await res.text());

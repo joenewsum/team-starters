@@ -37,6 +37,22 @@ export function NewSurveyForm({ defaultClose, minDate }: { defaultClose: string;
       </label>
 
       <label className="block">
+        <span className="text-sm font-semibold text-navy">How many people will you send it to?</span>
+        <input
+          name="team_size"
+          type="number"
+          min={3}
+          max={500}
+          defaultValue={state.teamSize}
+          placeholder="e.g. 8"
+          className="mt-1 w-full rounded-md border border-gray-300 px-4 py-3 focus:border-navy focus:outline-none"
+        />
+        <span className="mt-1 block text-xs text-gray-500">
+          Not counting you. When everyone has answered, the survey closes and your readout is emailed to you.
+        </span>
+      </label>
+
+      <label className="block">
         <span className="text-sm font-semibold text-navy">Close date</span>
         <input
           name="close_date"
@@ -46,7 +62,8 @@ export function NewSurveyForm({ defaultClose, minDate }: { defaultClose: string;
           className="mt-1 w-full rounded-md border border-gray-300 px-4 py-3 focus:border-navy focus:outline-none"
         />
         <span className="mt-1 block text-xs text-gray-500">
-          The link stops taking answers after this date. You can also close it early.
+          If not everyone has answered by then, the survey closes on this date and your readout is
+          emailed to you. You can also close it early.
         </span>
       </label>
 
