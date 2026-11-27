@@ -162,7 +162,7 @@ ${
 <div style="border:2px solid #c9a96e;background:#faf6ee;border-radius:8px;padding:18px 20px;margin:0 0 16px;">
 <p style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a6a2e;margin:0 0 6px;">Next: bring it to your team</p>
 <p style="font-size:17px;font-weight:700;color:#0f1f3d;margin:0 0 6px;">Run a team alignment workshop</p>
-<p style="font-size:14px;margin:0 0 14px;">A free guide to the 1.5 to 3 hour session that turns this readout into decisions: who you serve, your value statement, your scoreboard, and the first changes. It covers how to read the readout, what to share, the agenda, and scripts.</p>
+<p style="font-size:14px;margin:0 0 14px;">A free guide to the 1.5 to 3 hour session that gets your team aligned on who your customers are, what they value, the work that creates that value, and what to stop or slim down. It covers how to read the readout, what to share, the agenda, and scripts.</p>
 ${btn(WORKSHOP_URL, "Open the workshop guide", true)}
 </div>
 <div style="background:#0f1f3d;border-radius:8px;padding:18px 20px;margin:0 0 16px;color:#ffffff;">
@@ -186,7 +186,7 @@ Read every answer: ${p.answersLink}
 The full readout is attached as a PDF.
 
 NEXT: BRING IT TO YOUR TEAM
-Run a team alignment workshop. A free guide to the 1.5 to 3 hour session that turns this readout into decisions: ${WORKSHOP_URL}
+Run a team alignment workshop. A free guide to the 1.5 to 3 hour session that aligns your team on your customers, what they value, and what to stop or slim down: ${WORKSHOP_URL}
 
 FREE 30-MINUTE READOUT REVIEW
 Walk through it with me. We'll look at what stands out, what to share with your team, and how to run the workshop. No cost and no pitch.
