@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { finishSurvey } from "@/lib/finish";
+import { notifyNewSurvey } from "@/lib/admin-notify";
 import { adminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -84,6 +85,16 @@ export async function createSurvey(
 
   if (error || !data) return { ...keep, error: "Something went wrong. Try again." };
 
+  if (user.email) {
+    const email = user.email;
+    after(() =>
+      notifyNewSurvey(
+        email,
+        { teamName, template: template.name, teamSize, closeDate: closeDate || null },
+        profile,
+      ),
+    );
+  }
   revalidatePath("/dashboard");
   redirect(`/dashboard/surveys/${data.id}?new=1`);
 }
